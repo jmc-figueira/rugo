@@ -25,12 +25,48 @@ impl Map{
         }
     }
 
+    pub fn get_neighbours(&self, x: i32, y: i32) -> Vec<Tile>{
+        let mut retVal: Vec<Tile> = Vec::new();
+
+        if y > 0{
+            retVal.push(self.get_tile(x, y - 1).clone());
+        }
+        if y < self.height - 1{
+            retVal.push(self.get_tile(x, y + 1).clone());
+
+        }
+        if x > 0{
+            retVal.push(self.get_tile(x - 1, y).clone());
+            if y > 0{
+                retVal.push(self.get_tile(x - 1, y - 1).clone());
+            }
+            if y < self.height - 1{
+                retVal.push(self.get_tile(x - 1, y + 1).clone());
+            }
+        }
+        if x < self.width - 1{
+            retVal.push(self.get_tile(x + 1, y).clone());
+            if y > 0{
+                retVal.push(self.get_tile(x + 1, y - 1).clone());
+            }
+            if y < self.height - 1{
+                retVal.push(self.get_tile(x + 1, y + 1).clone());
+            }
+        }
+
+        retVal
+    }
+
+    pub fn get_tile(&self, x: i32, y: i32) -> &Tile{
+        &self.map[(y * self.width + x) as usize]
+    }
+
     pub fn change_tile(&mut self, x: i32, y: i32, tile: Tile){
         self.map[(y * self.width + x) as usize] = tile;
     }
 
     pub fn is_blocked(&self, x: i32, y: i32) -> bool{
-        self.map[(y * self.width + x) as usize].block
+        self.map[(y * self.width + x) as usize].is_blocked()
     }
 
     pub fn render(&self, console: &mut Console){
@@ -112,13 +148,34 @@ impl MapBuilder{
         }
 
         for iteration in 0..5{
-            for i in 0..self.map.width{
-                for j in 0..self.map.height{
-                    
+            for j in 0..self.map.height{
+                for i in 0..self.map.width{
+                    let neighbours = self.map.get_neighbours(i, j);
+                    if neighbours.len() < 8{
+                        self.map.change_tile(i, j, Tile::new(true, '#', colors::WHITE));
+                    }
+                    else{
+                        if MapBuilder::count_walls(&neighbours) < 5{
+                            self.map.change_tile(i, j, Tile::new(true, '#', colors::WHITE));
+                        }
+                        else{
+                            self.map.change_tile(i, j, Tile::new(false, '.', colors::WHITE));
+                        }
+                    }
                 }
             }
         }
 
         self.map
+    }
+
+    fn count_walls(neighbours: &Vec<Tile>) -> u8{
+        let mut acum = 0u8;
+        for cell in neighbours.iter(){
+            if cell.is_blocked(){
+                acum += 1;
+            }
+        }
+        acum
     }
 }
