@@ -19,6 +19,12 @@ impl Player{
             color: color
         }
     }
+
+    pub fn walk(&mut self, direction: Direction, map: &Map){
+        while self.move_cell(direction, map){
+
+        }
+    }
 }
 
 impl Object for Player{
@@ -29,8 +35,8 @@ impl Object for Player{
 }
 
 impl Entity for Player{
-    fn move_cell(&mut self, direction: Direction, map: &Map){
-        if self.check_mobility(&direction, map){
+    fn move_cell(&mut self, direction: Direction, map: &Map) -> bool{
+        if self.check_mobility(direction, map){
             match direction{
                 Direction::N => self.y -= 1,
                 Direction::S => self.y += 1,
@@ -53,13 +59,15 @@ impl Entity for Player{
                     self.y += 1;
                 },
             }
+            return true;
         }
+        false
     }
 
-    fn check_mobility(&self, direction: &Direction, map: &Map) -> bool{
+    fn check_mobility(&self, direction: Direction, map: &Map) -> bool{
         let mut check_x = self.x;
         let mut check_y = self.y;
-        match *direction{
+        match direction{
             Direction::N => check_y -= 1,
             Direction::S => check_y += 1,
             Direction::E => check_x += 1,
