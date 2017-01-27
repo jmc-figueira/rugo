@@ -1,17 +1,17 @@
-use tcod::colors::Color;
+use colors::ColorCell;
 
 pub struct Tile{
     block: bool,
     pub graphic: char,
-    pub color: Color,
+    pub color: ColorCell,
 }
 
 impl Tile{
-    pub fn new(wall: bool, graphic: char, color: Color) -> Tile{
+    pub fn new(wall: bool, graphic: char, bg: (u8, u8, u8), fg: (u8, u8, u8)) -> Tile{
         Tile{
             block: wall,
             graphic: graphic,
-            color: color
+            color: ColorCell::new(bg, fg)
         }
     }
 
@@ -25,7 +25,7 @@ impl Clone for Tile{
         Tile{
             block: self.block,
             graphic: self.graphic,
-            color: self.color
+            color: self.color.clone()
         }
     }
 }

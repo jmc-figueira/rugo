@@ -1,5 +1,4 @@
 use tcod::console::*;
-use tcod::colors;
 use tile::*;
 use rand;
 use rand::Rng;
@@ -15,7 +14,7 @@ impl Map{
         let mut map: Vec<Tile> = Vec::new();
 
         for _ in 0..(width * height){
-            map.push(Tile::new(true, ' ', colors::BLACK));
+            map.push(Tile::new(true, ' ', (0, 0, 0), (0, 0, 0)));
         }
 
         Map{
@@ -71,7 +70,8 @@ impl Map{
 
     pub fn render(&self, console: &mut Console){
         for (i, cell) in self.map.iter().enumerate(){
-            console.set_default_foreground(cell.color);
+            console.set_default_background(*cell.color.background());
+            console.set_default_foreground(*cell.color.foreground());
             console.put_char((i as i32) % self.width, (i as i32) / self.width, cell.graphic, BackgroundFlag::None);
         }
     }
@@ -94,17 +94,17 @@ impl MapBuilder{
         if x >= 0 && x < self.map.width && (x + width) < self.map.width && y >= 0 && y < self.map.height && (y + height) < self.map.height{
             for i in (x + 1)..(x + width){
                 for j in (y + 1)..(y + height){
-                    self.map.change_tile(i, j, Tile::new(false, '_', colors::WHITE));
+                    self.map.change_tile(i, j, Tile::new(false, '_', (0, 0, 0), (255, 255, 255)));
                 }
             }
             for i in x..(x + width + 1){
-                self.map.change_tile(i, y, Tile::new(true, '#', colors::WHITE));
-                self.map.change_tile(i, (y + height), Tile::new(true, '#', colors::WHITE));
+                self.map.change_tile(i, y, Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
+                self.map.change_tile(i, (y + height), Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
             }
 
             for j in y..(y + height + 1){
-                self.map.change_tile(x, j, Tile::new(true, '#', colors::WHITE));
-                self.map.change_tile((x + width), j, Tile::new(true, '#', colors::WHITE));
+                self.map.change_tile(x, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
+                self.map.change_tile((x + width), j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
             }
         }
         self
@@ -113,7 +113,7 @@ impl MapBuilder{
     fn create_horizontal_corridor(mut self, x: i32, y: i32, width: i32) -> MapBuilder{
         if x >= 0 && x < self.map.width && (x + width) < self.map.width{
             for i in x..(x + width){
-                self.map.change_tile(i, y, Tile::new(false, '.', colors::GREY));
+                self.map.change_tile(i, y, Tile::new(false, '.', (0, 0, 0), (127, 127, 127)));
             }
         }
         self
@@ -122,7 +122,7 @@ impl MapBuilder{
     fn create_vertical_corridor(mut self, x: i32, y: i32, height: i32) -> MapBuilder{
         if y >= 0 && y < self.map.height && (y + height) < self.map.height{
             for j in y..(y + height){
-                self.map.change_tile(x, j, Tile::new(false, '.', colors::GREY));
+                self.map.change_tile(x, j, Tile::new(false, '.', (0, 0, 0), (127, 127, 127)));
             }
         }
         self
@@ -139,10 +139,10 @@ impl MapBuilder{
                 let wall_chance = rand::thread_rng().gen_range(0, 100);
 
                 if wall_chance < 45{
-                    self.map.change_tile(i, j, Tile::new(true, '#', colors::WHITE));
+                    self.map.change_tile(i, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
                 }
                 else{
-                    self.map.change_tile(i, j, Tile::new(false, '.', colors::WHITE));
+                    self.map.change_tile(i, j, Tile::new(false, '.', (0, 0, 0), (255, 255, 255)));
                 }
             }
         }
@@ -152,14 +152,14 @@ impl MapBuilder{
                 for i in 0..self.map.width{
                     let neighbours = self.map.get_neighbours(i, j);
                     if neighbours.len() < 8{
-                        self.map.change_tile(i, j, Tile::new(true, '#', colors::WHITE));
+                        self.map.change_tile(i, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
                     }
                     else{
                         if MapBuilder::count_walls(&neighbours) < 5{
-                            self.map.change_tile(i, j, Tile::new(true, '#', colors::WHITE));
+                            self.map.change_tile(i, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
                         }
                         else{
-                            self.map.change_tile(i, j, Tile::new(false, '.', colors::WHITE));
+                            self.map.change_tile(i, j, Tile::new(false, '.', (0, 0, 0), (255, 255, 255)));
                         }
                     }
                 }

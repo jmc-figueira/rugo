@@ -2,12 +2,12 @@ extern crate tcod;
 extern crate rand;
 
 mod object;
+mod colors;
 mod player;
 mod tile;
 mod map;
 
 use tcod::console::*;
-use tcod::colors;
 use tcod::input::*;
 use object::*;
 use player::*;
@@ -23,7 +23,7 @@ fn main(){
 
     tcod::system::set_fps(FPS);
 
-    let mut player = Player::new(5, 5, '@', colors::WHITE);
+    let mut player = Player::new(5, 5, '@', (0, 0, 0), (67, 179, 174));
 
     let map = MapBuilder::new(SCREEN_WIDTH, SCREEN_HEIGHT).generate_cave();
 
@@ -42,6 +42,7 @@ fn main(){
 fn handle_input(root: &mut Root, player: &mut Player, map: &Map){
     let key = root.wait_for_keypress(true);
     match key{
+        Key{code, shift: true, ..} => shift_commands(code, player, map),
         Key{code: KeyCode::NumPad8, ..} => {
             player.move_cell(Direction::N, map);
         },
@@ -65,6 +66,36 @@ fn handle_input(root: &mut Root, player: &mut Player, map: &Map){
         },
         Key{code: KeyCode::NumPad1, ..} => {
             player.move_cell(Direction::SW, map);
+        },
+        _ => {},
+    }
+}
+
+fn shift_commands(key: KeyCode, player: &mut Player, map: &Map){
+    match key{
+        KeyCode::NumPad8 => {
+            player.walk(Direction::N, map);
+        },
+        KeyCode::NumPad2 => {
+            player.walk(Direction::S, map);
+        },
+        KeyCode::NumPad6 => {
+            player.walk(Direction::E, map);
+        },
+        KeyCode::NumPad4 => {
+            player.walk(Direction::W, map);
+        },
+        KeyCode::NumPad7 => {
+            player.walk(Direction::NW, map);
+        },
+        KeyCode::NumPad9 => {
+            player.walk(Direction::NE, map);
+        },
+        KeyCode::NumPad3 => {
+            player.walk(Direction::SE, map);
+        },
+        KeyCode::NumPad1 => {
+            player.walk(Direction::SW, map);
         },
         _ => {},
     }

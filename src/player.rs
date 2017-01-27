@@ -1,5 +1,5 @@
 use tcod::console::*;
-use tcod::colors::Color;
+use colors::ColorCell;
 use object::*;
 use map::*;
 
@@ -7,16 +7,16 @@ pub struct Player{
     x: i32,
     y: i32,
     graphic: char,
-    color: Color,
+    color: ColorCell,
 }
 
 impl Player{
-    pub fn new(x: i32, y: i32, graphic: char, color: Color) -> Player{
+    pub fn new(x: i32, y: i32, graphic: char, bg: (u8, u8, u8), fg: (u8, u8, u8)) -> Player{
         Player{
             x: x,
             y: y,
             graphic: graphic,
-            color: color
+            color: ColorCell::new(bg, fg)
         }
     }
 
@@ -29,7 +29,8 @@ impl Player{
 
 impl Object for Player{
     fn render(&self, console: &mut Console){
-        console.set_default_foreground(self.color);
+        console.set_default_background(*self.color.background());
+        console.set_default_foreground(*self.color.foreground());
         console.put_char(self.x, self.y, self.graphic, BackgroundFlag::None);
     }
 }
