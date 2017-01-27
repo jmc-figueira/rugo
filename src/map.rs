@@ -77,6 +77,16 @@ impl Map{
     }
 }
 
+impl Clone for Map{
+    fn clone(&self) -> Map{
+        Map{
+            width: self.width,
+            height: self.height,
+            map: self.map.clone()
+        }
+    }
+}
+
 
 
 pub struct MapBuilder{
@@ -138,7 +148,7 @@ impl MapBuilder{
             for j in 0..self.map.height{
                 let wall_chance = rand::thread_rng().gen_range(0, 100);
 
-                if wall_chance < 45{
+                if wall_chance < 55{
                     self.map.change_tile(i, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
                 }
                 else{
@@ -148,22 +158,24 @@ impl MapBuilder{
         }
 
         for _ in 0..5{
+            let mut new_map = self.map.clone();
             for j in 0..self.map.height{
                 for i in 0..self.map.width{
                     let neighbours = self.map.get_neighbours(i, j);
                     if neighbours.len() < 8{
-                        self.map.change_tile(i, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
+                        new_map.change_tile(i, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
                     }
                     else{
                         if MapBuilder::count_walls(&neighbours) < 5{
-                            self.map.change_tile(i, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
+                            new_map.change_tile(i, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
                         }
                         else{
-                            self.map.change_tile(i, j, Tile::new(false, '.', (0, 0, 0), (255, 255, 255)));
+                            new_map.change_tile(i, j, Tile::new(false, '.', (0, 0, 0), (255, 255, 255)));
                         }
                     }
                 }
             }
+            self.map = new_map;
         }
 
         self.map
