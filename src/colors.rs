@@ -22,6 +22,10 @@ impl ColorCell{
     pub fn foreground(&self) -> &Color{
         &self.foreground
     }
+
+    pub fn blend_color(&self, other: &ColorCell) -> &ColorCell{
+        
+    }
 }
 
 impl Clone for ColorCell{
