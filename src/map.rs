@@ -1,4 +1,6 @@
 use tcod::console::*;
+use colors::*;
+use player::*;
 use tile::*;
 use rand;
 use rand::Rng;
@@ -14,7 +16,7 @@ impl Map{
         let mut map: Vec<Tile> = Vec::new();
 
         for _ in 0..(width * height){
-            map.push(Tile::new(true, ' ', (0, 0, 0), (0, 0, 0)));
+            map.push(Tile::new(true, ' ', (0, 0, 0), (0, 0, 0), 1f32));
         }
 
         Map{
@@ -68,10 +70,13 @@ impl Map{
         self.map[(y * self.width + x) as usize].is_blocked()
     }
 
-    pub fn render(&self, console: &mut Console){
+    pub fn render(&self, console: &mut Console, player: &Player){
         for (i, cell) in self.map.iter().enumerate(){
-            console.set_default_background(*cell.color.background());
-            console.set_default_foreground(*cell.color.foreground());
+            let cell_x = (i as i32) % self.width;
+            let cell_y = (i as i32) / self.width;
+            let blended = cell.color.blend_light(&player.light, player.light_intensity, cell.absorption, (cell_x - player.x).abs(), (cell_y - player.y).abs());
+            console.set_default_background(*blended.background());
+            console.set_default_foreground(*blended.foreground());
             console.put_char((i as i32) % self.width, (i as i32) / self.width, cell.graphic, BackgroundFlag::None);
         }
     }
@@ -104,17 +109,17 @@ impl MapBuilder{
         if x >= 0 && x < self.map.width && (x + width) < self.map.width && y >= 0 && y < self.map.height && (y + height) < self.map.height{
             for i in (x + 1)..(x + width){
                 for j in (y + 1)..(y + height){
-                    self.map.change_tile(i, j, Tile::new(false, '_', (0, 0, 0), (255, 255, 255)));
+                    self.map.change_tile(i, j, Tile::new(false, '_', (0, 0, 0), (255, 255, 255), 0.15));
                 }
             }
             for i in x..(x + width + 1){
-                self.map.change_tile(i, y, Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
-                self.map.change_tile(i, (y + height), Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
+                self.map.change_tile(i, y, Tile::new(true, '#', (0, 0, 0), (255, 255, 255), 1f32));
+                self.map.change_tile(i, (y + height), Tile::new(true, '#', (0, 0, 0), (255, 255, 255), 1f32));
             }
 
             for j in y..(y + height + 1){
-                self.map.change_tile(x, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
-                self.map.change_tile((x + width), j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
+                self.map.change_tile(x, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255), 1f32));
+                self.map.change_tile((x + width), j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255), 1f32));
             }
         }
         self
@@ -123,7 +128,7 @@ impl MapBuilder{
     fn create_horizontal_corridor(mut self, x: i32, y: i32, width: i32) -> MapBuilder{
         if x >= 0 && x < self.map.width && (x + width) < self.map.width{
             for i in x..(x + width){
-                self.map.change_tile(i, y, Tile::new(false, '.', (0, 0, 0), (127, 127, 127)));
+                self.map.change_tile(i, y, Tile::new(false, '.', (0, 0, 0), (127, 127, 127), 0.15));
             }
         }
         self
@@ -132,7 +137,7 @@ impl MapBuilder{
     fn create_vertical_corridor(mut self, x: i32, y: i32, height: i32) -> MapBuilder{
         if y >= 0 && y < self.map.height && (y + height) < self.map.height{
             for j in y..(y + height){
-                self.map.change_tile(x, j, Tile::new(false, '.', (0, 0, 0), (127, 127, 127)));
+                self.map.change_tile(x, j, Tile::new(false, '.', (0, 0, 0), (127, 127, 127), 0.15));
             }
         }
         self
@@ -149,10 +154,10 @@ impl MapBuilder{
                 let wall_chance = rand::thread_rng().gen_range(0, 100);
 
                 if wall_chance < 55{
-                    self.map.change_tile(i, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
+                    self.map.change_tile(i, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255), 1f32));
                 }
                 else{
-                    self.map.change_tile(i, j, Tile::new(false, '.', (0, 0, 0), (255, 255, 255)));
+                    self.map.change_tile(i, j, Tile::new(false, '.', (0, 0, 0), (255, 255, 255), 0.15));
                 }
             }
         }
@@ -163,14 +168,14 @@ impl MapBuilder{
                 for i in 0..self.map.width{
                     let neighbours = self.map.get_neighbours(i, j);
                     if neighbours.len() < 8{
-                        new_map.change_tile(i, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
+                        new_map.change_tile(i, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255), 1f32));
                     }
                     else{
                         if MapBuilder::count_walls(&neighbours) < 5{
-                            new_map.change_tile(i, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255)));
+                            new_map.change_tile(i, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255), 1f32));
                         }
                         else{
-                            new_map.change_tile(i, j, Tile::new(false, '.', (0, 0, 0), (255, 255, 255)));
+                            new_map.change_tile(i, j, Tile::new(false, '.', (0, 0, 0), (255, 255, 255), 0.15));
                         }
                     }
                 }

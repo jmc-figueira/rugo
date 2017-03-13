@@ -1,22 +1,28 @@
 use tcod::console::*;
+use tcod::colors::Color;
 use colors::ColorCell;
 use object::*;
 use map::*;
 
 pub struct Player{
-    x: i32,
-    y: i32,
+    pub x: i32,
+    pub y: i32,
     graphic: char,
     color: ColorCell,
+    pub light: Color,
+    pub light_intensity: f32,
 }
 
 impl Player{
-    pub fn new(x: i32, y: i32, graphic: char, bg: (u8, u8, u8), fg: (u8, u8, u8)) -> Player{
+    pub fn new(x: i32, y: i32, graphic: char, bg: (u8, u8, u8), fg: (u8, u8, u8), light_intensity: f32) -> Player{
+        let color_cell = ColorCell::new(bg, fg);
         Player{
             x: x,
             y: y,
             graphic: graphic,
-            color: ColorCell::new(bg, fg)
+            color: ColorCell::new(bg, fg),
+            light: *color_cell.foreground(),
+            light_intensity: light_intensity
         }
     }
 

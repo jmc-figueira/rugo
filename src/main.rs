@@ -23,7 +23,7 @@ fn main(){
 
     tcod::system::set_fps(FPS);
 
-    let mut player = Player::new(5, 5, '@', (0, 0, 0), (67, 179, 174));
+    let mut player = Player::new(5, 5, '@', (0, 0, 0), (67, 179, 174), 1f32);
 
     let map = MapBuilder::new(SCREEN_WIDTH, SCREEN_HEIGHT).generate_cave();
 
@@ -32,7 +32,7 @@ fn main(){
     let mut quit = false;
 
     while !root.window_closed() && !quit{
-        map.render(&mut world_console);
+        map.render(&mut world_console, &player);
         player.render(&mut world_console);
 
         blit(&mut world_console, (0, 0), (SCREEN_WIDTH, SCREEN_HEIGHT), &mut root, (0, 0), 1.0, 1.0);
