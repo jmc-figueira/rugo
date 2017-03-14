@@ -1,5 +1,6 @@
 use tcod::console::*;
 use tcod::colors::Color;
+use colors::Rgb;
 use colors::ColorCell;
 use object::*;
 use map::*;
@@ -14,7 +15,7 @@ pub struct Player{
 }
 
 impl Player{
-    pub fn new(x: i32, y: i32, graphic: char, bg: (u8, u8, u8), fg: (u8, u8, u8), light_intensity: f32) -> Player{
+    pub fn new(x: i32, y: i32, graphic: char, bg: Rgb, fg: Rgb, light_intensity: f32) -> Player{
         let color_cell = ColorCell::new(bg, fg);
         Player{
             x: x,

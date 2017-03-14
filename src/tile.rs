@@ -1,4 +1,5 @@
 use colors::ColorCell;
+use colors::Rgb;
 
 pub struct Tile{
     block: bool,
@@ -8,7 +9,7 @@ pub struct Tile{
 }
 
 impl Tile{
-    pub fn new(wall: bool, graphic: char, bg: (u8, u8, u8), fg: (u8, u8, u8), absorption: f32) -> Tile{
+    pub fn new(wall: bool, graphic: char, bg: Rgb, fg: Rgb, absorption: f32) -> Tile{
         Tile{
             block: wall,
             graphic: graphic,

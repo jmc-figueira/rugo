@@ -1,11 +1,14 @@
 use tcod::colors::Color;
 use tcod::colors::lerp;
 
-pub const DARK: (u8, u8, u8) = (0, 0, 0);
-pub const CAVE_WALL: (u8, u8, u8) = (122, 82, 48);
-pub const CAVE_FLOOR: (u8, u8, u8) = (85, 57, 33);
-pub const MEMORY: (u8, u8, u8) = (64, 64, 64);
-pub const PLAYER: (u8, u8, u8) = (67, 179, 174);
+pub type Rgb = (u8, u8, u8);
+
+pub const DARK: Rgb = (0, 0, 0);
+pub const CAVE_WALL: Rgb = (122, 82, 48);
+pub const CAVE_FLOOR: Rgb = (85, 57, 33);
+pub const STAIRS: Rgb = (114, 123, 132);
+pub const MEMORY: Rgb = (64, 64, 64);
+pub const PLAYER: Rgb = (67, 179, 174);
 
 pub struct ColorCell{
     background: Color,
@@ -13,7 +16,7 @@ pub struct ColorCell{
 }
 
 impl ColorCell{
-    pub fn new(background: (u8, u8, u8), foreground: (u8, u8, u8)) -> ColorCell{
+    pub fn new(background: Rgb, foreground: Rgb) -> ColorCell{
         let (br, bg, bb) = background;
         let (fr, fg, fb) = foreground;
         ColorCell{

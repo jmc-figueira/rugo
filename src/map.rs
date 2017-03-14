@@ -270,7 +270,7 @@ impl MapBuilder{
         self
     }
 
-    pub fn generate_cave(mut self) -> Map{
+    pub fn generate_cave(mut self) -> MapBuilder{
         loop{
             let mut tmp_map = self.map.clone();
 
@@ -325,7 +325,7 @@ impl MapBuilder{
             }
         }
 
-        self.map
+        self
     }
 
     fn count_walls(neighbours: &Vec<Tile>) -> u8{
@@ -336,5 +336,9 @@ impl MapBuilder{
             }
         }
         acum
+    }
+
+    pub fn build(self) -> Map{
+        return self.map
     }
 }
