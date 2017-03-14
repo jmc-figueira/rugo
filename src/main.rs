@@ -13,13 +13,14 @@ use object::*;
 use player::*;
 use map::*;
 
+const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 50;
 const FPS: i32 = 60;
 
 fn main(){
-    let mut root = Root::initializer().renderer(Renderer::GLSL).font("consolas12x12_gs_tc.png", FontLayout::Tcod).font_type(FontType::Greyscale).size(SCREEN_WIDTH, SCREEN_HEIGHT).title("Rugo").init();
+    let mut root = Root::initializer().renderer(Renderer::GLSL).font("consolas12x12_gs_tc.png", FontLayout::Tcod).font_type(FontType::Greyscale).size(SCREEN_WIDTH, SCREEN_HEIGHT).title(format!("Rugo {}", VERSION)).init();
 
     tcod::system::set_fps(FPS);
 
