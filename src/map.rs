@@ -4,6 +4,7 @@ use player::*;
 use tile::*;
 use rand;
 use rand::Rng;
+use std::f64;
 
 pub struct Map{
     pub width: i32,
@@ -71,13 +72,42 @@ impl Map{
     }
 
     pub fn render(&self, console: &mut Console, player: &Player){
-        for (i, cell) in self.map.iter().enumerate(){
-            let cell_x = (i as i32) % self.width;
-            let cell_y = (i as i32) / self.width;
-            let blended = cell.color.blend_light(&player.light, player.light_intensity, cell.absorption, (cell_x - player.x).abs(), (cell_y - player.y).abs());
+        let mut iteration = 0;
+        let mut angle = 0f64;
+        let mut calculated: Vec<(i32, i32)> = Vec::new();
+        let mut curr_light_level = player.light_intensity;
+
+        while angle < f64::consts::PI{
+            let curr_x = ((iteration as f64) * angle.cos()).round() as i32;
+            let curr_y = ((iteration as f64) * angle.sin()).round() as i32;
+            if curr_x < 0 || curr_x >= self.width || curr_y < 0 || curr_y >= self.height{
+                angle += 0.01;
+                iteration = 0;
+                curr_light_level = player.light_intensity;
+                continue;
+            }
+            if calculated.iter().any(|c| c.0 == curr_x && c.1 == curr_y){
+                iteration += 1;
+                curr_light_level = player.light_intensity;
+                continue;
+            }
+            calculated.push((curr_x, curr_y));
+
+            let cell = self.get_tile(curr_x, curr_y);
+
+            let blended = cell.color.blend_light(&player.light, curr_light_level);
             console.set_default_background(*blended.background());
             console.set_default_foreground(*blended.foreground());
-            console.put_char((i as i32) % self.width, (i as i32) / self.width, cell.graphic, BackgroundFlag::None);
+            console.put_char(curr_x, curr_y, cell.graphic, BackgroundFlag::None);
+
+            curr_light_level -= cell.absorption;
+            if curr_light_level <= 0f32{
+                angle += 0.01;
+                iteration = 0;
+                curr_light_level = player.light_intensity;
+                continue;
+            }
+            iteration += 1;
         }
     }
 }
