@@ -48,45 +48,45 @@ fn main(){
 fn handle_input(root: &mut Root, player: &mut Player, map: &Map) -> bool{
     let key = root.wait_for_keypress(true);
     match key{
-        Key{code: KeyCode::Escape, ..} => return true,
+        Key{code: KeyCode::Escape, ..} => true,
         Key{code, printable, shift: true, ..} => {
             shift_commands(code, printable, player, map);
-            return false;
+            false
         },
         Key{code: KeyCode::NumPad8, ..} | Key{printable: 'w', ..} => {
             player.move_cell(Direction::N, map);
-            return false;
+            false
         },
         Key{code: KeyCode::NumPad2, ..} | Key{printable: 'x', ..} => {
             player.move_cell(Direction::S, map);
-            return false;
+            false
         },
         Key{code: KeyCode::NumPad6, ..} | Key{printable: 'd', ..} => {
             player.move_cell(Direction::E, map);
-            return false;
+            false
         },
         Key{code: KeyCode::NumPad4, ..} | Key{printable: 'a', ..} => {
             player.move_cell(Direction::W, map);
-            return false;
+            false
         },
         Key{code: KeyCode::NumPad7, ..} | Key{printable: 'q', ..} => {
             player.move_cell(Direction::NW, map);
-            return false;
+            false
         },
         Key{code: KeyCode::NumPad9, ..} | Key{printable: 'e', ..} => {
             player.move_cell(Direction::NE, map);
-            return false;
+            false
         },
         Key{code: KeyCode::NumPad3, ..} | Key{printable: 'c', ..} => {
             player.move_cell(Direction::SE, map);
-            return false;
+            false
         },
         Key{code: KeyCode::NumPad1, ..} | Key{printable: 'z', ..} => {
             player.move_cell(Direction::SW, map);
-            return false;
+            false
         },
         _ => {
-            return false;
+            false
         },
     }
 }

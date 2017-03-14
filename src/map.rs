@@ -35,10 +35,85 @@ impl Map{
             let ret_x = rand::thread_rng().gen_range(0, self.width);
             let ret_y = rand::thread_rng().gen_range(0, self.height);
 
-            if !self.get_tile(ret_x, ret_y).is_blocked(){
+            if !self.is_blocked(ret_x, ret_y){
                 return (ret_x, ret_y);
             }
         }
+    }
+
+    pub fn flood_fill(&self, start_x: i32, start_y: i32) -> Vec<(i32, i32)>{
+        let mut ret_val: Vec<(i32, i32)> = Vec::new();
+        let mut visited: Vec<(i32, i32)> = Vec::new();
+
+        visited.push((start_x, start_y));
+
+        while !visited.is_empty(){
+
+            let current = visited.pop().unwrap();
+
+            ret_val.push(current);
+
+            if self.is_blocked(current.0, current.1){
+                continue;
+            }
+
+            let neighbours = self.get_neighbouring_empty(current.0, current.1);
+
+            for coords in neighbours.iter(){
+                if !ret_val.iter().any(|c| c.0 == coords.0 && c.1 == coords.1) && !visited.iter().any(|c| c.0 == coords.0 && c.1 == coords.1){
+                    visited.push(*coords);
+                }
+            }
+        }
+
+        ret_val
+    }
+
+    fn get_neighbouring_empty(&self, x: i32, y: i32) -> Vec<(i32, i32)>{
+        let mut ret_val: Vec<(i32, i32)> = Vec::new();
+
+        if y > 0{
+            if !self.is_blocked(x, y - 1){
+                ret_val.push((x, y - 1));
+            }
+        }
+        if y < self.height - 1{
+            if !self.is_blocked(x, y + 1){
+                ret_val.push((x, y + 1));
+            }
+        }
+        if x > 0{
+            if !self.is_blocked(x - 1, y){
+                ret_val.push((x - 1, y));
+            }
+            if y > 0{
+                if !self.is_blocked(x - 1, y - 1){
+                    ret_val.push((x - 1, y - 1));
+                }
+            }
+            if y < self.height - 1{
+                if !self.is_blocked(x - 1, y + 1){
+                    ret_val.push((x - 1, y + 1));
+                }
+            }
+        }
+        if x < self.width - 1{
+            if !self.is_blocked(x + 1, y){
+                ret_val.push((x + 1, y));
+            }
+            if y > 0{
+                if !self.is_blocked(x + 1, y - 1){
+                    ret_val.push((x + 1, y - 1));
+                }
+            }
+            if y < self.height - 1{
+                if !self.is_blocked(x + 1, y + 1){
+                    ret_val.push((x + 1, y + 1));
+                }
+            }
+        }
+
+        ret_val
     }
 
     pub fn get_neighbours(&self, x: i32, y: i32) -> Vec<Tile>{
@@ -196,38 +271,58 @@ impl MapBuilder{
     }
 
     pub fn generate_cave(mut self) -> Map{
-        for i in 0..self.map.width{
-            for j in 0..self.map.height{
-                let wall_chance = rand::thread_rng().gen_range(0, 100);
+        loop{
+            let mut tmp_map = self.map.clone();
 
-                if wall_chance < 55{
-                    self.map.change_tile(i, j, Tile::new(true, '#', DARK, CAVE_WALL, f32::MAX));
-                }
-                else{
-                    self.map.change_tile(i, j, Tile::new(false, '.', DARK, CAVE_FLOOR, 0.15));
-                }
-            }
-        }
+            for i in 0..self.map.width{
+                for j in 0..self.map.height{
+                    let wall_chance = rand::thread_rng().gen_range(0, 100);
 
-        for _ in 0..5{
-            let mut new_map = self.map.clone();
-            for j in 0..self.map.height{
-                for i in 0..self.map.width{
-                    let neighbours = self.map.get_neighbours(i, j);
-                    if neighbours.len() < 8{
-                        new_map.change_tile(i, j, Tile::new(true, '#', DARK, CAVE_WALL, f32::MAX));
+                    if wall_chance < 55{
+                        tmp_map.change_tile(i, j, Tile::new(true, '#', DARK, CAVE_WALL, f32::MAX));
                     }
                     else{
-                        if MapBuilder::count_walls(&neighbours) < 5{
+                        tmp_map.change_tile(i, j, Tile::new(false, '.', DARK, CAVE_FLOOR, 0.15));
+                    }
+                }
+            }
+
+            for _ in 0..5{
+                let mut new_map = tmp_map.clone();
+                for j in 0..self.map.height{
+                    for i in 0..self.map.width{
+                        let neighbours = tmp_map.get_neighbours(i, j);
+                        if neighbours.len() < 8{
                             new_map.change_tile(i, j, Tile::new(true, '#', DARK, CAVE_WALL, f32::MAX));
                         }
                         else{
-                            new_map.change_tile(i, j, Tile::new(false, '.', DARK, CAVE_FLOOR, 0.15));
+                            if MapBuilder::count_walls(&neighbours) < 5{
+                                new_map.change_tile(i, j, Tile::new(true, '#', DARK, CAVE_WALL, f32::MAX));
+                            }
+                            else{
+                                new_map.change_tile(i, j, Tile::new(false, '.', DARK, CAVE_FLOOR, 0.15));
+                            }
                         }
                     }
                 }
+                tmp_map = new_map;
             }
-            self.map = new_map;
+            let test_coords = tmp_map.get_random_empty_tile();
+            let open_area = tmp_map.flood_fill(test_coords.0, test_coords.1);
+
+            if open_area.len() as f64 >= 0.4 * tmp_map.width as f64 * tmp_map.height as f64{
+                self.map = tmp_map;
+
+                for j in 0..self.map.height{
+                    for i in 0..self.map.width{
+                        if !self.map.is_blocked(i, j) && !open_area.iter().any(|c| c.0 ==i && c.1 == j){
+                            self.map.change_tile(i, j, Tile::new(true, '#', DARK, CAVE_WALL, f32::MAX));
+                        }
+                    }
+                }
+
+                break;
+            }
         }
 
         self.map
