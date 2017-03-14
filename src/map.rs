@@ -6,10 +6,13 @@ use rand;
 use rand::Rng;
 use std::f64;
 
+const MEMORY_COLOR: ColorCell = ColorCell::new((0, 0, 0), (64, 64, 64));
+
 pub struct Map{
     pub width: i32,
     pub height: i32,
     map: Vec<Tile>,
+    memory: Vec<(i32, i32)>,
 }
 
 impl Map{
@@ -23,7 +26,8 @@ impl Map{
         Map{
             width: width,
             height: height,
-            map: map
+            map: map,
+            memory: Vec::new()
         }
     }
 
@@ -72,6 +76,14 @@ impl Map{
     }
 
     pub fn render(&self, console: &mut Console, player: &Player){
+        for (x, y) in self.memory.iter().enumerate(){
+            let cell = self.get_tile(x as i32, y as i32);
+
+            console.set_default_background(*MEMORY_COLOR.background());
+            console.set_default_foreground(*MEMORY_COLOR.foreground());
+            console.put_char(x as i32, y as i32, cell.graphic, BackgroundFlag::None);
+        }
+
         let mut iteration = 0;
         let mut angle = 0f64;
         let mut curr_light_level = player.light_intensity;
@@ -85,6 +97,8 @@ impl Map{
                 curr_light_level = player.light_intensity;
                 continue;
             }
+
+            self.memory.push((curr_x, curr_y));
 
             let cell = self.get_tile(curr_x, curr_y);
 
@@ -104,7 +118,8 @@ impl Clone for Map{
         Map{
             width: self.width,
             height: self.height,
-            map: self.map.clone()
+            map: self.map.clone(),
+            memory: self.memory.clone()
         }
     }
 }
