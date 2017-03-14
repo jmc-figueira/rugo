@@ -74,24 +74,17 @@ impl Map{
     pub fn render(&self, console: &mut Console, player: &Player){
         let mut iteration = 0;
         let mut angle = 0f64;
-        let mut calculated: Vec<(i32, i32)> = Vec::new();
         let mut curr_light_level = player.light_intensity;
 
-        while angle < f64::consts::PI{
-            let curr_x = ((iteration as f64) * angle.cos()).round() as i32;
-            let curr_y = ((iteration as f64) * angle.sin()).round() as i32;
+        while angle < 2f64 * f64::consts::PI{
+            let curr_x = player.x + ((iteration as f64) * angle.cos()).round() as i32;
+            let curr_y = player.y + ((iteration as f64) * angle.sin()).round() as i32;
             if curr_x < 0 || curr_x >= self.width || curr_y < 0 || curr_y >= self.height{
-                angle += 0.01;
+                angle += f64::consts::PI / 1000f64;
                 iteration = 0;
                 curr_light_level = player.light_intensity;
                 continue;
             }
-            if calculated.iter().any(|c| c.0 == curr_x && c.1 == curr_y){
-                iteration += 1;
-                curr_light_level = player.light_intensity;
-                continue;
-            }
-            calculated.push((curr_x, curr_y));
 
             let cell = self.get_tile(curr_x, curr_y);
 
@@ -101,12 +94,6 @@ impl Map{
             console.put_char(curr_x, curr_y, cell.graphic, BackgroundFlag::None);
 
             curr_light_level -= cell.absorption;
-            if curr_light_level <= 0f32{
-                angle += 0.01;
-                iteration = 0;
-                curr_light_level = player.light_intensity;
-                continue;
-            }
             iteration += 1;
         }
     }
