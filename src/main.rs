@@ -7,6 +7,7 @@ mod player;
 mod tile;
 mod map;
 
+use colors::*;
 use tcod::console::*;
 use tcod::input::*;
 use object::*;
@@ -24,9 +25,11 @@ fn main(){
 
     tcod::system::set_fps(FPS);
 
-    let mut player = Player::new(5, 5, '@', (0, 0, 0), (67, 179, 174), 1f32);
-
     let mut map = MapBuilder::new(SCREEN_WIDTH, SCREEN_HEIGHT).generate_cave();
+
+    let player_pos = map.get_random_empty_tile();
+
+    let mut player = Player::new(player_pos.0, player_pos.1, '@', DARK, PLAYER, 2f32);
 
     let mut world_console = Offscreen::new(SCREEN_WIDTH, SCREEN_HEIGHT);
 

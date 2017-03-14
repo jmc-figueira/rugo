@@ -5,6 +5,7 @@ use tile::*;
 use rand;
 use rand::Rng;
 use std::f64;
+use std::f32;
 
 pub struct Map{
     pub width: i32,
@@ -18,7 +19,7 @@ impl Map{
         let mut map: Vec<Tile> = Vec::new();
 
         for _ in 0..(width * height){
-            map.push(Tile::new(true, ' ', (0, 0, 0), (0, 0, 0), 1f32));
+            map.push(Tile::new(true, ' ', DARK, DARK, 1f32));
         }
 
         Map{
@@ -26,6 +27,17 @@ impl Map{
             height: height,
             map: map,
             memory: Vec::new()
+        }
+    }
+
+    pub fn get_random_empty_tile(&self) -> (i32, i32){
+        loop{
+            let ret_x = rand::thread_rng().gen_range(0, self.width);
+            let ret_y = rand::thread_rng().gen_range(0, self.height);
+
+            if !self.get_tile(ret_x, ret_y).is_blocked(){
+                return (ret_x, ret_y);
+            }
         }
     }
 
@@ -74,7 +86,7 @@ impl Map{
     }
 
     pub fn render(&mut self, console: &mut Console, player: &Player){
-        let memory_color = ColorCell::new((0, 0, 0), (64, 64, 64));
+        let memory_color = ColorCell::new(DARK, MEMORY);
         for coords in self.memory.iter(){
             let cell = self.get_tile(coords.0 as i32, coords.1 as i32);
 
@@ -144,17 +156,17 @@ impl MapBuilder{
         if x >= 0 && x < self.map.width && (x + width) < self.map.width && y >= 0 && y < self.map.height && (y + height) < self.map.height{
             for i in (x + 1)..(x + width){
                 for j in (y + 1)..(y + height){
-                    self.map.change_tile(i, j, Tile::new(false, '_', (0, 0, 0), (255, 255, 255), 0.15));
+                    self.map.change_tile(i, j, Tile::new(false, '_', DARK, (255, 255, 255), 0.15));
                 }
             }
             for i in x..(x + width + 1){
-                self.map.change_tile(i, y, Tile::new(true, '#', (0, 0, 0), (255, 255, 255), 1f32));
-                self.map.change_tile(i, (y + height), Tile::new(true, '#', (0, 0, 0), (255, 255, 255), 1f32));
+                self.map.change_tile(i, y, Tile::new(true, '#', DARK, (255, 255, 255), 1f32));
+                self.map.change_tile(i, (y + height), Tile::new(true, '#', DARK, (255, 255, 255), 1f32));
             }
 
             for j in y..(y + height + 1){
-                self.map.change_tile(x, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255), 1f32));
-                self.map.change_tile((x + width), j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255), 1f32));
+                self.map.change_tile(x, j, Tile::new(true, '#', DARK, (255, 255, 255), 1f32));
+                self.map.change_tile((x + width), j, Tile::new(true, '#', DARK, (255, 255, 255), 1f32));
             }
         }
         self
@@ -163,7 +175,7 @@ impl MapBuilder{
     fn create_horizontal_corridor(mut self, x: i32, y: i32, width: i32) -> MapBuilder{
         if x >= 0 && x < self.map.width && (x + width) < self.map.width{
             for i in x..(x + width){
-                self.map.change_tile(i, y, Tile::new(false, '.', (0, 0, 0), (127, 127, 127), 0.15));
+                self.map.change_tile(i, y, Tile::new(false, '.', DARK, (127, 127, 127), 0.15));
             }
         }
         self
@@ -172,7 +184,7 @@ impl MapBuilder{
     fn create_vertical_corridor(mut self, x: i32, y: i32, height: i32) -> MapBuilder{
         if y >= 0 && y < self.map.height && (y + height) < self.map.height{
             for j in y..(y + height){
-                self.map.change_tile(x, j, Tile::new(false, '.', (0, 0, 0), (127, 127, 127), 0.15));
+                self.map.change_tile(x, j, Tile::new(false, '.', DARK, (127, 127, 127), 0.15));
             }
         }
         self
@@ -189,10 +201,10 @@ impl MapBuilder{
                 let wall_chance = rand::thread_rng().gen_range(0, 100);
 
                 if wall_chance < 55{
-                    self.map.change_tile(i, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255), 1f32));
+                    self.map.change_tile(i, j, Tile::new(true, '#', DARK, CAVE_WALL, f32::MAX));
                 }
                 else{
-                    self.map.change_tile(i, j, Tile::new(false, '.', (0, 0, 0), (255, 255, 255), 0.15));
+                    self.map.change_tile(i, j, Tile::new(false, '.', DARK, CAVE_FLOOR, 0.15));
                 }
             }
         }
@@ -203,14 +215,14 @@ impl MapBuilder{
                 for i in 0..self.map.width{
                     let neighbours = self.map.get_neighbours(i, j);
                     if neighbours.len() < 8{
-                        new_map.change_tile(i, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255), 1f32));
+                        new_map.change_tile(i, j, Tile::new(true, '#', DARK, CAVE_WALL, f32::MAX));
                     }
                     else{
                         if MapBuilder::count_walls(&neighbours) < 5{
-                            new_map.change_tile(i, j, Tile::new(true, '#', (0, 0, 0), (255, 255, 255), 1f32));
+                            new_map.change_tile(i, j, Tile::new(true, '#', DARK, CAVE_WALL, f32::MAX));
                         }
                         else{
-                            new_map.change_tile(i, j, Tile::new(false, '.', (0, 0, 0), (255, 255, 255), 0.15));
+                            new_map.change_tile(i, j, Tile::new(false, '.', DARK, CAVE_FLOOR, 0.15));
                         }
                     }
                 }
