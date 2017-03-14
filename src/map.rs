@@ -97,16 +97,18 @@ impl Map{
                 continue;
             }
 
-            if !self.memory.iter().any(|c| c.0 == curr_x && c.1 == curr_y){
+            if !self.memory.iter().any(|c| c.0 == curr_x && c.1 == curr_y) && curr_light_level > 0f32{
                 self.memory.push((curr_x, curr_y));
             }
 
             let cell = self.get_tile(curr_x, curr_y);
 
-            let blended = cell.color.blend_light(&player.light, curr_light_level);
-            console.set_default_background(*blended.background());
-            console.set_default_foreground(*blended.foreground());
-            console.put_char(curr_x, curr_y, cell.graphic, BackgroundFlag::None);
+            if curr_light_level > 0f32{
+                let blended = cell.color.blend_light(&player.light, curr_light_level);
+                console.set_default_background(*blended.background());
+                console.set_default_foreground(*blended.foreground());
+                console.put_char(curr_x, curr_y, cell.graphic, BackgroundFlag::None);
+            }
 
             curr_light_level -= cell.absorption;
             iteration += 1;
