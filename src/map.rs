@@ -6,8 +6,6 @@ use rand;
 use rand::Rng;
 use std::f64;
 
-const MEMORY_COLOR: ColorCell = ColorCell::new((0, 0, 0), (64, 64, 64));
-
 pub struct Map{
     pub width: i32,
     pub height: i32,
@@ -75,13 +73,14 @@ impl Map{
         self.map[(y * self.width + x) as usize].is_blocked()
     }
 
-    pub fn render(&self, console: &mut Console, player: &Player){
-        for (x, y) in self.memory.iter().enumerate(){
-            let cell = self.get_tile(x as i32, y as i32);
+    pub fn render(&mut self, console: &mut Console, player: &Player){
+        let memory_color = ColorCell::new((0, 0, 0), (64, 64, 64));
+        for coords in self.memory.iter(){
+            let cell = self.get_tile(coords.0 as i32, coords.1 as i32);
 
-            console.set_default_background(*MEMORY_COLOR.background());
-            console.set_default_foreground(*MEMORY_COLOR.foreground());
-            console.put_char(x as i32, y as i32, cell.graphic, BackgroundFlag::None);
+            console.set_default_background(*memory_color.background());
+            console.set_default_foreground(*memory_color.foreground());
+            console.put_char(coords.0 as i32, coords.1 as i32, cell.graphic, BackgroundFlag::None);
         }
 
         let mut iteration = 0;
@@ -98,7 +97,9 @@ impl Map{
                 continue;
             }
 
-            self.memory.push((curr_x, curr_y));
+            if !self.memory.iter().any(|c| c.0 == curr_x && c.1 == curr_y){
+                self.memory.push((curr_x, curr_y));
+            }
 
             let cell = self.get_tile(curr_x, curr_y);
 

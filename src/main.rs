@@ -25,7 +25,7 @@ fn main(){
 
     let mut player = Player::new(5, 5, '@', (0, 0, 0), (67, 179, 174), 1f32);
 
-    let map = MapBuilder::new(SCREEN_WIDTH, SCREEN_HEIGHT).generate_cave();
+    let mut map = MapBuilder::new(SCREEN_WIDTH, SCREEN_HEIGHT).generate_cave();
 
     let mut world_console = Offscreen::new(SCREEN_WIDTH, SCREEN_HEIGHT);
 
