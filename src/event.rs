@@ -1,4 +1,4 @@
-use object::{Direction, Entity};
+use object::{Direction, Entity, EntityManager};
 use map::Map;
 
 pub enum Event{
@@ -7,22 +7,24 @@ pub enum Event{
 }
 
 impl Event{
-    pub fn execute(&self, event_queue: &mut EventQueue, entity_list: Vec<&mut Entity>, map: &Map) -> bool{
+    pub fn execute(&self, event_queue: &mut EventQueue, entity_list: &mut EntityManager, map: &Map) -> bool{
         match *self{
             Event::Move(id, dir) => {
-                match Event::findEntityById(entity_list, id){
+                match entity_list.getEntityById(id){
                     Some(entity) => {
                         entity.move_cell(dir, map);
+                        entity_list.register(entity);
                         true
                     },
                     None => false
                 }
             },
             Event::Walk(id, dir) => {
-                match Event::findEntityById(entity_list, id){
+                match entity_list.getEntityById(id){
                     Some(entity) => {
                         if entity.check_mobility(dir, map){
                             entity.move_cell(dir, map);
+                            entity_list.register(entity);
                             event_queue.push(Event::Walk(id, dir));
                             return true;
                         }
@@ -33,21 +35,12 @@ impl Event{
             }
         }
     }
-
-    fn findEntityById(entity_list: Vec<&mut Entity>, id: u64) -> Option<&mut Entity>{
-        for entity in entity_list{
-            if entity.get_id() == id{
-                return Some(entity);
-            }
-        }
-        None
-    }
 }
 
 pub trait EventQueue{
     fn push(&mut self, event: Event);
 
-    fn poll(&mut self, entity_list: Vec<&mut Entity>, map: &Map) -> bool;
+    fn poll(&mut self, entity_list: &mut EntityManager, map: &Map) -> bool;
 }
 
 pub struct TurnBasedEventQueue{
@@ -67,7 +60,7 @@ impl EventQueue for TurnBasedEventQueue{
         self.queue.push(event);
     }
 
-    fn poll(&mut self, entity_list: Vec<&mut Entity>, map: &Map) -> bool{
+    fn poll(&mut self, entity_list: &mut EntityManager, map: &Map) -> bool{
         let next_event = self.queue.pop();
 
         match next_event{

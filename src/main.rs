@@ -15,6 +15,7 @@ use object::*;
 use player::*;
 use map::*;
 use event::{Event, EventQueue, TurnBasedEventQueue};
+use std::any::Any;
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
@@ -29,11 +30,13 @@ fn main(){
 
     let mut map = MapBuilder::new(SCREEN_WIDTH, SCREEN_HEIGHT).generate_cave().build();
 
+    let mut entities = EntityManager::new();
+
     let player_pos = map.get_random_empty_tile();
 
     let mut id_gen = IDManager::new();
 
-    let mut player = Player::new(&mut id_gen, player_pos.0, player_pos.1, '@', DARK, PLAYER, 2f32);
+    let player = entities.register(&mut Player::new(&mut id_gen, player_pos.0, player_pos.1, '@', DARK, PLAYER, 2f32));
 
     let mut event_queue = TurnBasedEventQueue::new();
 
@@ -42,14 +45,18 @@ fn main(){
     let mut quit = false;
 
     while !root.window_closed() && !quit{
-        event_queue.poll(vec![&mut player], &map);
+        event_queue.poll(&mut entities, &map);
 
-        map.render(&mut world_console, &player);
-        player.render(&mut world_console);
+        unsafe{
+            let player_e = entities.getEntityById(player).unwrap() as &Any;
+            map.render(&mut world_console, player_e);
+            player_e.render(&mut world_console);
+            entities.register(player_e);
+        }
 
         blit(&mut world_console, (0, 0), (SCREEN_WIDTH, SCREEN_HEIGHT), &mut root, (0, 0), 1.0, 1.0);
         root.flush();
-        quit = handle_input(&mut root, &mut event_queue, player.get_id(), &map);
+        quit = handle_input(&mut root, &mut event_queue, player, &map);
     }
 }
 
