@@ -6,6 +6,7 @@ mod colors;
 mod player;
 mod tile;
 mod map;
+mod event;
 
 use colors::*;
 use tcod::console::*;
@@ -13,6 +14,7 @@ use tcod::input::*;
 use object::*;
 use player::*;
 use map::*;
+use event::{Event, EventQueue, TurnBasedEventQueue};
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
@@ -29,91 +31,100 @@ fn main(){
 
     let player_pos = map.get_random_empty_tile();
 
-    let mut player = Player::new(player_pos.0, player_pos.1, '@', DARK, PLAYER, 2f32);
+    let mut id_gen = IDManager::new();
+
+    let mut player = Player::new(&mut id_gen, player_pos.0, player_pos.1, '@', DARK, PLAYER, 2f32);
+
+    let mut event_queue = TurnBasedEventQueue::new();
 
     let mut world_console = Offscreen::new(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     let mut quit = false;
 
     while !root.window_closed() && !quit{
+        event_queue.poll(vec![&mut player], &map);
+
         map.render(&mut world_console, &player);
         player.render(&mut world_console);
 
         blit(&mut world_console, (0, 0), (SCREEN_WIDTH, SCREEN_HEIGHT), &mut root, (0, 0), 1.0, 1.0);
         root.flush();
-        quit = handle_input(&mut root, &mut player, &map);
+        quit = handle_input(&mut root, &mut event_queue, player.get_id(), &map);
     }
 }
 
-fn handle_input(root: &mut Root, player: &mut Player, map: &Map) -> bool{
-    let key = root.wait_for_keypress(true);
-    match key{
-        Key{code: KeyCode::Escape, ..} => true,
-        Key{code, printable, shift: true, ..} => {
-            shift_commands(code, printable, player, map);
-            false
-        },
-        Key{code: KeyCode::NumPad8, ..} | Key{printable: 'w', ..} => {
-            player.move_cell(Direction::N, map);
-            false
-        },
-        Key{code: KeyCode::NumPad2, ..} | Key{printable: 'x', ..} => {
-            player.move_cell(Direction::S, map);
-            false
-        },
-        Key{code: KeyCode::NumPad6, ..} | Key{printable: 'd', ..} => {
-            player.move_cell(Direction::E, map);
-            false
-        },
-        Key{code: KeyCode::NumPad4, ..} | Key{printable: 'a', ..} => {
-            player.move_cell(Direction::W, map);
-            false
-        },
-        Key{code: KeyCode::NumPad7, ..} | Key{printable: 'q', ..} => {
-            player.move_cell(Direction::NW, map);
-            false
-        },
-        Key{code: KeyCode::NumPad9, ..} | Key{printable: 'e', ..} => {
-            player.move_cell(Direction::NE, map);
-            false
-        },
-        Key{code: KeyCode::NumPad3, ..} | Key{printable: 'c', ..} => {
-            player.move_cell(Direction::SE, map);
-            false
-        },
-        Key{code: KeyCode::NumPad1, ..} | Key{printable: 'z', ..} => {
-            player.move_cell(Direction::SW, map);
-            false
-        },
-        _ => {
-            false
-        },
+fn handle_input(root: &mut Root, event_queue: &mut EventQueue, player_id: u64, map: &Map) -> bool{
+    if let Some(key) = root.check_for_keypress(KEY_PRESSED){
+        match key{
+            Key{code: KeyCode::Escape, ..} => true,
+            Key{code, printable, shift: true, ..} => {
+                shift_commands(code, printable, event_queue, player_id, map);
+                false
+            },
+            Key{code: KeyCode::NumPad8, ..} | Key{printable: 'w', ..} => {
+                event_queue.push(Event::Move(player_id, Direction::N));
+                false
+            },
+            Key{code: KeyCode::NumPad2, ..} | Key{printable: 'x', ..} => {
+                event_queue.push(Event::Move(player_id, Direction::S));
+                false
+            },
+            Key{code: KeyCode::NumPad6, ..} | Key{printable: 'd', ..} => {
+                event_queue.push(Event::Move(player_id, Direction::E));
+                false
+            },
+            Key{code: KeyCode::NumPad4, ..} | Key{printable: 'a', ..} => {
+                event_queue.push(Event::Move(player_id, Direction::W));
+                false
+            },
+            Key{code: KeyCode::NumPad7, ..} | Key{printable: 'q', ..} => {
+                event_queue.push(Event::Move(player_id, Direction::NW));
+                false
+            },
+            Key{code: KeyCode::NumPad9, ..} | Key{printable: 'e', ..} => {
+                event_queue.push(Event::Move(player_id, Direction::NE));
+                false
+            },
+            Key{code: KeyCode::NumPad3, ..} | Key{printable: 'c', ..} => {
+                event_queue.push(Event::Move(player_id, Direction::SE));
+                false
+            },
+            Key{code: KeyCode::NumPad1, ..} | Key{printable: 'z', ..} => {
+                event_queue.push(Event::Move(player_id, Direction::SW));
+                false
+            },
+            _ => {
+                false
+            },
+        }
+    } else{
+        false
     }
 }
 
-fn shift_commands(key: KeyCode, printable: char, player: &mut Player, map: &Map){
+fn shift_commands(key: KeyCode, printable: char, event_queue: &mut EventQueue, player_id: u64, map: &Map){
     if key == KeyCode::NumPad8 || printable == 'W'{
-        player.walk(Direction::N, map);
+        event_queue.push(Event::Walk(player_id, Direction::N));
     }
     else if key == KeyCode::NumPad2 || printable == 'X'{
-        player.walk(Direction::S, map);
+        event_queue.push(Event::Walk(player_id, Direction::S));
     }
     else if key == KeyCode::NumPad6 || printable == 'D'{
-        player.walk(Direction::E, map);
+        event_queue.push(Event::Walk(player_id, Direction::E));
     }
     else if key == KeyCode::NumPad4 || printable == 'A'{
-        player.walk(Direction::W, map);
+        event_queue.push(Event::Walk(player_id, Direction::W));
     }
     else if key == KeyCode::NumPad7 || printable == 'Q'{
-        player.walk(Direction::NW, map);
+        event_queue.push(Event::Walk(player_id, Direction::NW));
     }
     else if key == KeyCode::NumPad9 || printable == 'E'{
-        player.walk(Direction::NE, map);
+        event_queue.push(Event::Walk(player_id, Direction::NE));
     }
     else if key == KeyCode::NumPad3 || printable == 'C'{
-        player.walk(Direction::SE, map);
+        event_queue.push(Event::Walk(player_id, Direction::SE));
     }
     else if key == KeyCode::NumPad1 || printable == 'Z'{
-        player.walk(Direction::SW, map);
+        event_queue.push(Event::Walk(player_id, Direction::SW));
     }
 }

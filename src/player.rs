@@ -6,6 +6,7 @@ use object::*;
 use map::*;
 
 pub struct Player{
+    id: u64,
     pub x: i32,
     pub y: i32,
     graphic: char,
@@ -15,21 +16,16 @@ pub struct Player{
 }
 
 impl Player{
-    pub fn new(x: i32, y: i32, graphic: char, bg: Rgb, fg: Rgb, light_intensity: f32) -> Player{
+    pub fn new(id_gen: &mut IDManager, x: i32, y: i32, graphic: char, bg: Rgb, fg: Rgb, light_intensity: f32) -> Player{
         let color_cell = ColorCell::new(bg, fg);
         Player{
+            id: id_gen.next_id(),
             x: x,
             y: y,
             graphic: graphic,
             color: ColorCell::new(bg, fg),
             light: *color_cell.foreground(),
             light_intensity: light_intensity
-        }
-    }
-
-    pub fn walk(&mut self, direction: Direction, map: &Map){
-        while self.move_cell(direction, map){
-
         }
     }
 }
@@ -43,6 +39,10 @@ impl Object for Player{
 }
 
 impl Entity for Player{
+    fn get_id(&self) -> u64{
+        self.id
+    }
+
     fn move_cell(&mut self, direction: Direction, map: &Map) -> bool{
         if self.check_mobility(direction, map){
             match direction{
