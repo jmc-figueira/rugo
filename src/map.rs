@@ -11,7 +11,6 @@ pub struct Map{
     pub width: i32,
     pub height: i32,
     map: Vec<Tile>,
-    memory: Vec<(i32, i32)>,
 }
 
 impl Map{
@@ -25,8 +24,7 @@ impl Map{
         Map{
             width: width,
             height: height,
-            map: map,
-            memory: Vec::new()
+            map: map
         }
     }
 
@@ -160,14 +158,18 @@ impl Map{
         self.map[(y * self.width + x) as usize].is_blocked()
     }
 
+    fn explore(&mut self, x: i32, y: i32){
+        self.map[(y * self.width + x) as usize].toggle_explored();
+    }
+
     pub fn render(&mut self, console: &mut Console, player: &Player){
         let memory_color = ColorCell::new(DARK, MEMORY);
-        for coords in self.memory.iter(){
-            let cell = self.get_tile(coords.0 as i32, coords.1 as i32);
-
-            console.set_default_background(*memory_color.background());
-            console.set_default_foreground(*memory_color.foreground());
-            console.put_char(coords.0 as i32, coords.1 as i32, cell.graphic, BackgroundFlag::None);
+        for (i, tile) in self.map.iter().enumerate(){
+            if tile.is_explored(){
+                console.set_default_background(*memory_color.background());
+                console.set_default_foreground(*memory_color.foreground());
+                console.put_char((i as i32) % self.width, (i as i32) / self.width, tile.graphic, BackgroundFlag::None);
+            }
         }
 
         let mut iteration = 0;
@@ -184,8 +186,8 @@ impl Map{
                 continue;
             }
 
-            if !self.memory.iter().any(|c| c.0 == curr_x && c.1 == curr_y) && curr_light_level > 0f32{
-                self.memory.push((curr_x, curr_y));
+            if !self.get_tile(curr_x, curr_y).is_explored() && curr_light_level > 0f32{
+                self.explore(curr_x, curr_y);
             }
 
             let cell = self.get_tile(curr_x, curr_y);
@@ -208,8 +210,7 @@ impl Clone for Map{
         Map{
             width: self.width,
             height: self.height,
-            map: self.map.clone(),
-            memory: self.memory.clone()
+            map: self.map.clone()
         }
     }
 }

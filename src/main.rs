@@ -48,7 +48,7 @@ fn main(){
     while !root.window_closed() && !quit{
         event_queue.poll(&mut entities, &map);
 
-        let player_e = entities.getEntityById(player).unwrap().as_player().unwrap();
+        let player_e = entities.get_entity_by_id(player).unwrap().as_player().unwrap();
 
         map.render(&mut world_console, player_e);
         player_e.render(&mut world_console);
@@ -57,16 +57,16 @@ fn main(){
 
         blit(&mut world_console, (0, 0), (SCREEN_WIDTH, SCREEN_HEIGHT), &mut root, (0, 0), 1.0, 1.0);
         root.flush();
-        quit = handle_input(&mut root, &mut event_queue, player, &map);
+        quit = handle_input(&mut root, &mut event_queue, player);
     }
 }
 
-fn handle_input(root: &mut Root, event_queue: &mut EventQueue, player_id: u64, map: &Map) -> bool{
+fn handle_input(root: &mut Root, event_queue: &mut EventQueue, player_id: u64) -> bool{
     if let Some(key) = root.check_for_keypress(KEY_PRESSED){
         match key{
             Key{code: KeyCode::Escape, ..} => true,
             Key{code, printable, shift: true, ..} => {
-                shift_commands(code, printable, event_queue, player_id, map);
+                shift_commands(code, printable, event_queue, player_id);
                 false
             },
             Key{code: KeyCode::NumPad8, ..} | Key{printable: 'w', ..} => {
@@ -110,7 +110,7 @@ fn handle_input(root: &mut Root, event_queue: &mut EventQueue, player_id: u64, m
     }
 }
 
-fn shift_commands(key: KeyCode, printable: char, event_queue: &mut EventQueue, player_id: u64, map: &Map){
+fn shift_commands(key: KeyCode, printable: char, event_queue: &mut EventQueue, player_id: u64){
     if key == KeyCode::NumPad8 || printable == 'W'{
         event_queue.push(Event::Walk(player_id, Direction::N));
     }

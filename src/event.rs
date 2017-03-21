@@ -1,4 +1,4 @@
-use object::{Direction, Entity, EntityManager};
+use object::{Direction, EntityManager};
 use map::Map;
 
 pub enum Event{
@@ -10,7 +10,7 @@ impl Event{
     pub fn execute(&self, event_queue: &mut EventQueue, entity_list: &mut EntityManager, map: &Map) -> bool{
         match *self{
             Event::Move(id, dir) => {
-                match entity_list.getEntityById(id){
+                match entity_list.get_entity_by_id(id){
                     Some(entity) => {
                         entity.move_cell(dir, map);
                         entity_list.register(entity);
@@ -20,7 +20,7 @@ impl Event{
                 }
             },
             Event::Walk(id, dir) => {
-                match entity_list.getEntityById(id){
+                match entity_list.get_entity_by_id(id){
                     Some(entity) => {
                         if entity.check_mobility(dir, map){
                             entity.move_cell(dir, map);

@@ -64,7 +64,7 @@ impl<'root> EntityManager<'root>{
         ret_val
     }
 
-    pub fn getEntityById(&mut self, id: u64) -> Option<&'root mut Entity>{
+    pub fn get_entity_by_id(&mut self, id: u64) -> Option<&'root mut Entity>{
         self.entities.remove(&id)
     }
 }
