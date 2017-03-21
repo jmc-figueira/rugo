@@ -29,6 +29,8 @@ fn main(){
 
     let mut map = MapBuilder::new(SCREEN_WIDTH, SCREEN_HEIGHT).generate_cave().build();
 
+    let mut entities = EntityManager::new();
+
     let player_pos = map.get_random_empty_tile();
 
     let mut id_gen = IDManager::new();
