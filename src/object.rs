@@ -1,5 +1,6 @@
 use tcod::console::*;
 use map::*;
+use player::Player;
 use std::collections::HashMap;
 
 #[derive(Copy, Clone)]
@@ -39,6 +40,8 @@ impl IDManager{
 pub trait Entity : Object{
     fn get_id(&self) -> u64;
 
+    fn as_player(&mut self) -> Option<&mut Player>;
+
     fn move_cell(&mut self, direction: Direction, map: &Map) -> bool;
 
     fn check_mobility(&self, direction: Direction, map: &Map) -> bool;
@@ -56,8 +59,9 @@ impl<'root> EntityManager<'root>{
     }
 
     pub fn register(&mut self, entity: &'root mut Entity) -> u64{
+        let ret_val = entity.get_id();
         self.entities.insert(entity.get_id(), entity);
-        entity.get_id()
+        ret_val
     }
 
     pub fn getEntityById(&mut self, id: u64) -> Option<&'root mut Entity>{

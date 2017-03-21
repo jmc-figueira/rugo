@@ -34,7 +34,7 @@ impl ColorCell{
     }
 
     pub fn blend_light(&self, light: &Color, intensity: f32) -> ColorCell{
-        let tile_color = (lerp(self.background, *light, 0.5), lerp(self.foreground, *light, 0.25));
+        let tile_color = (lerp(self.background, *light, 0.25), lerp(self.foreground, *light, 0.25));
         ColorCell{
             background: lerp(Color::new(0, 0, 0), tile_color.0, intensity.min(1f32).max(0f32)),
             foreground: lerp(Color::new(0, 0, 0), tile_color.1, intensity.min(1f32).max(0f32))

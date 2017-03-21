@@ -28,6 +28,7 @@ impl Event{
                             event_queue.push(Event::Walk(id, dir));
                             return true;
                         }
+                        entity_list.register(entity);
                         false
                     },
                     None => false

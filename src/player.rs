@@ -43,6 +43,10 @@ impl Entity for Player{
         self.id
     }
 
+    fn as_player(&mut self) -> Option<&mut Player>{
+        Some(self)
+    }
+
     fn move_cell(&mut self, direction: Direction, map: &Map) -> bool{
         if self.check_mobility(direction, map){
             match direction{
