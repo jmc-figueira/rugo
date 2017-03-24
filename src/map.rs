@@ -329,6 +329,14 @@ impl MapBuilder{
         self
     }
 
+    pub fn add_entrance(mut self) -> Result<((i32, i32), MapBuilder), MapBuilder>{
+        let entrance = self.map.get_random_empty_tile();
+
+        self.map.change_tile(entrance.0, entrance.1, Tile::new(false, '<', DARK, STAIRS, 0.05));
+
+        Ok((entrance, self))
+    }
+
     fn count_walls(neighbours: &Vec<Tile>) -> u8{
         let mut acum = 0u8;
         for cell in neighbours.iter(){

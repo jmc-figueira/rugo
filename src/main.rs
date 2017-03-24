@@ -27,37 +27,40 @@ fn main(){
 
     tcod::system::set_fps(FPS);
 
-    let mut map = MapBuilder::new(SCREEN_WIDTH, SCREEN_HEIGHT).generate_cave().build();
+    let mut map_builder = MapBuilder::new(SCREEN_WIDTH, SCREEN_HEIGHT).generate_cave();
 
-    let player_pos = map.get_random_empty_tile();
+    if let Ok((entrance, builder)) = map_builder.add_entrance(){
 
-    let mut id_gen = IDManager::new();
+        let mut map = builder.build();
 
-    let mut pobj = Player::new(&mut id_gen, player_pos.0, player_pos.1, '@', DARK, PLAYER, 2f32);
+        let mut id_gen = IDManager::new();
 
-    let mut entities = EntityManager::new();
+        let mut pobj = Player::new(&mut id_gen, entrance.0, entrance.1, '@', DARK, PLAYER, 2f32);
 
-    let player = entities.register(&mut pobj);
+        let mut entities = EntityManager::new();
 
-    let mut event_queue = TurnBasedEventQueue::new();
+        let player = entities.register(&mut pobj);
 
-    let mut world_console = Offscreen::new(SCREEN_WIDTH, SCREEN_HEIGHT);
+        let mut event_queue = TurnBasedEventQueue::new();
 
-    let mut quit = false;
+        let mut world_console = Offscreen::new(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    while !root.window_closed() && !quit{
-        event_queue.poll(&mut entities, &map);
+        let mut quit = false;
 
-        let player_e = entities.get_entity_by_id(player).unwrap().as_player().unwrap();
+        while !root.window_closed() && !quit{
+            event_queue.poll(&mut entities, &map);
 
-        map.render(&mut world_console, player_e);
-        player_e.render(&mut world_console);
+            let player_e = entities.get_entity_by_id(player).unwrap().as_player().unwrap();
 
-        entities.register(player_e);
+            map.render(&mut world_console, player_e);
+            player_e.render(&mut world_console);
 
-        blit(&mut world_console, (0, 0), (SCREEN_WIDTH, SCREEN_HEIGHT), &mut root, (0, 0), 1.0, 1.0);
-        root.flush();
-        quit = handle_input(&mut root, &mut event_queue, player);
+            entities.register(player_e);
+
+            blit(&mut world_console, (0, 0), (SCREEN_WIDTH, SCREEN_HEIGHT), &mut root, (0, 0), 1.0, 1.0);
+            root.flush();
+            quit = handle_input(&mut root, &mut event_queue, player);
+        }
     }
 }
 
