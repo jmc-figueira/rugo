@@ -28,15 +28,31 @@ impl Map{
         }
     }
 
-    pub fn get_random_empty_tile(&self) -> (i32, i32){
+    fn any_empty_tile(&self) -> bool{
+        for tile in self.map.iter(){
+            if !tile.is_blocked(){
+                return true;
+            }
+        }
+        false
+    }
+
+    pub fn get_random_empty_tile(&self) -> Result<(i32, i32), ()>{
+        if !self.any_empty_tile(){
+            return Err(());
+        }
         loop{
             let ret_x = rand::thread_rng().gen_range(0, self.width);
             let ret_y = rand::thread_rng().gen_range(0, self.height);
 
             if !self.is_blocked(ret_x, ret_y){
-                return (ret_x, ret_y);
+                return Ok((ret_x, ret_y));
             }
         }
+    }
+
+    pub fn get_distance(x1: i32, y1: i32, x2: i32, y2: i32) -> f64{
+        ((x1 as f64 - x2 as f64).powi(2) + (y1 as f64 - y2 as f64).powi(2)).sqrt()
     }
 
     pub fn flood_fill(&self, start_x: i32, start_y: i32) -> Vec<(i32, i32)>{
@@ -308,33 +324,46 @@ impl MapBuilder{
                 }
                 tmp_map = new_map;
             }
-            let test_coords = tmp_map.get_random_empty_tile();
-            let open_area = tmp_map.flood_fill(test_coords.0, test_coords.1);
+            if let Ok(test_coords) = tmp_map.get_random_empty_tile(){
+                let open_area = tmp_map.flood_fill(test_coords.0, test_coords.1);
 
-            if open_area.len() as f64 >= 0.4 * tmp_map.width as f64 * tmp_map.height as f64{
-                self.map = tmp_map;
+                if open_area.len() as f64 >= 0.4 * tmp_map.width as f64 * tmp_map.height as f64{
+                    self.map = tmp_map;
 
-                for j in 0..self.map.height{
-                    for i in 0..self.map.width{
-                        if !self.map.is_blocked(i, j) && !open_area.iter().any(|c| c.0 ==i && c.1 == j){
-                            self.map.change_tile(i, j, Tile::new(true, '#', DARK, CAVE_WALL, f32::MAX));
+                    for j in 0..self.map.height{
+                        for i in 0..self.map.width{
+                            if !self.map.is_blocked(i, j) && !open_area.iter().any(|c| c.0 ==i && c.1 == j){
+                                self.map.change_tile(i, j, Tile::new(true, '#', DARK, CAVE_WALL, f32::MAX));
+                            }
                         }
                     }
-                }
 
-                break;
+                    break;
+                }
             }
         }
 
         self
     }
 
-    pub fn add_entrance(mut self) -> Result<((i32, i32), MapBuilder), MapBuilder>{
-        let entrance = self.map.get_random_empty_tile();
+    fn add_entrance(mut self) -> Result<((i32, i32), MapBuilder), MapBuilder>{
+        if let Ok(entrance) = self.map.get_random_empty_tile(){
+            self.map.change_tile(entrance.0, entrance.1, Tile::new(false, '<', DARK, STAIRS, 0.05));
 
-        self.map.change_tile(entrance.0, entrance.1, Tile::new(false, '<', DARK, STAIRS, 0.05));
+            return Ok((entrance, self));
+        }
 
-        Ok((entrance, self))
+        Err(self)
+    }
+
+    fn add_exit(mut self) -> Result<((i32, i32), MapBuilder), MapBuilder>{
+        if let Ok(exit) = self.map.get_random_empty_tile(){
+            self.map.change_tile(exit.0, exit.1, Tile::new(false, '>', DARK, STAIRS, 0.05));
+
+            return Ok((exit, self));
+        }
+
+        Err(self)
     }
 
     fn count_walls(neighbours: &Vec<Tile>) -> u8{
