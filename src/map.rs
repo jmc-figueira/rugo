@@ -51,8 +51,8 @@ impl Map{
         }
     }
 
-    pub fn get_distance(x1: i32, y1: i32, x2: i32, y2: i32) -> f64{
-        ((x1 as f64 - x2 as f64).powi(2) + (y1 as f64 - y2 as f64).powi(2)).sqrt()
+    pub fn get_distance(first: (i32, i32), second: (i32, i32)) -> f64{
+        ((first.0 as f64 - second.0 as f64).powi(2) + (first.1 as f64 - second.1 as f64).powi(2)).sqrt()
     }
 
     pub fn flood_fill(&self, start_x: i32, start_y: i32) -> Vec<(i32, i32)>{
@@ -287,7 +287,8 @@ impl MapBuilder{
         self
     }
 
-    pub fn generate_cave(mut self) -> MapBuilder{
+    pub fn generate_cave(mut self) -> (MapBuilder, (i32, i32)){
+        let mut ret_entrance = (-1, -1);
         loop{
             let mut tmp_map = self.map.clone();
 
@@ -337,33 +338,26 @@ impl MapBuilder{
                             }
                         }
                     }
+                    if let Ok(entrance) = self.map.get_random_empty_tile(){
+                        self.map.change_tile(entrance.0, entrance.1, Tile::new(false, '<', DARK, STAIRS, 0.05));
+
+                        ret_entrance = entrance;
+
+                        while let Ok(exit) = self.map.get_random_empty_tile(){
+                            if Map::get_distance(exit, entrance) < 10f64{
+                                continue;
+                            }
+                            self.map.change_tile(exit.0, exit.1, Tile::new(false, '>', DARK, STAIRS, 0.05));
+                            break;
+                        }
+                    }
 
                     break;
                 }
             }
         }
 
-        self
-    }
-
-    fn add_entrance(mut self) -> Result<((i32, i32), MapBuilder), MapBuilder>{
-        if let Ok(entrance) = self.map.get_random_empty_tile(){
-            self.map.change_tile(entrance.0, entrance.1, Tile::new(false, '<', DARK, STAIRS, 0.05));
-
-            return Ok((entrance, self));
-        }
-
-        Err(self)
-    }
-
-    fn add_exit(mut self) -> Result<((i32, i32), MapBuilder), MapBuilder>{
-        if let Ok(exit) = self.map.get_random_empty_tile(){
-            self.map.change_tile(exit.0, exit.1, Tile::new(false, '>', DARK, STAIRS, 0.05));
-
-            return Ok((exit, self));
-        }
-
-        Err(self)
+        (self, ret_entrance)
     }
 
     fn count_walls(neighbours: &Vec<Tile>) -> u8{
@@ -377,6 +371,6 @@ impl MapBuilder{
     }
 
     pub fn build(self) -> Map{
-        return self.map
+        self.map
     }
 }

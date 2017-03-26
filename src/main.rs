@@ -27,9 +27,9 @@ fn main(){
 
     tcod::system::set_fps(FPS);
 
-    let mut map = MapBuilder::new(SCREEN_WIDTH, SCREEN_HEIGHT).generate_cave().build();
+    let (map_builder, player_pos) = MapBuilder::new(SCREEN_WIDTH, SCREEN_HEIGHT).generate_cave();
 
-    let player_pos = map.get_random_empty_tile().unwrap();
+    let mut map = map_builder.build();
 
     let mut id_gen = IDManager::new();
 
