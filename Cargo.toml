@@ -1,6 +1,6 @@
 [package]
 name = "rugo"
-version = "0.0.1-201703262132"
+version = "0.0.1-201704040017"
 authors = ["João Figueira <joao.tburn@gmail.com>"]
 
 [dependencies]
