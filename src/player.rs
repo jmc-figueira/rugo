@@ -4,6 +4,7 @@ use colors::Rgb;
 use colors::ColorCell;
 use object::*;
 use map::*;
+use stats::*;
 
 pub struct Player{
     id: u64,
@@ -13,6 +14,7 @@ pub struct Player{
     color: ColorCell,
     pub light: Color,
     pub light_intensity: f32,
+    pub stats: Stats,
 }
 
 impl Player{
@@ -25,7 +27,8 @@ impl Player{
             graphic: graphic,
             color: ColorCell::new(bg, fg),
             light: *color_cell.foreground(),
-            light_intensity: light_intensity
+            light_intensity: light_intensity,
+            stats: Stats::new()
         }
     }
 }
@@ -103,5 +106,23 @@ impl Entity for Player{
         }
 
         check_x >= 0 && check_x < map.width && check_y >= 0 && check_y < map.height && !map.is_blocked(check_x, check_y)
+    }
+}
+
+impl StatDriven for Player{
+    fn set_hp(&mut self, hp: u64){
+        self.stats.curr_hp = hp;
+    }
+
+    fn set_max_hp(&mut self, max_hp: u64){
+        self.stats.max_hp = max_hp;
+    }
+
+    fn get_hp(&self) -> u64{
+        self.stats.curr_hp
+    }
+
+    fn get_max_hp(&self) -> u64{
+        self.stats.max_hp
     }
 }
