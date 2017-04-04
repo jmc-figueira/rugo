@@ -30,7 +30,7 @@ fn main(){
 
     tcod::system::set_fps(FPS);
 
-    let ui = SciUI::new(SCREEN_WIDTH, 5);
+    let mut ui = SciUI::new(SCREEN_WIDTH);
 
     let (map_builder, player_pos) = MapBuilder::new(SCREEN_WIDTH, SCREEN_HEIGHT).generate_cave();
 
@@ -56,6 +56,8 @@ fn main(){
         event_queue.poll(&mut entities, &map);
 
         let player_e = entities.get_entity_by_id(player).unwrap().as_player().unwrap();
+
+        ui.update_hud(player_e.stats.clone());
 
         map.render(&mut world_console, player_e);
         player_e.render(&mut world_console);

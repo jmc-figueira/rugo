@@ -182,9 +182,7 @@ impl Map{
         let memory_color = ColorCell::new(DARK, MEMORY);
         for (i, tile) in self.map.iter().enumerate(){
             if tile.is_explored(){
-                console.set_default_background(*memory_color.background());
-                console.set_default_foreground(*memory_color.foreground());
-                console.put_char((i as i32) % self.width, (i as i32) / self.width, tile.graphic, BackgroundFlag::None);
+                console.put_char_ex((i as i32) % self.width, (i as i32) / self.width, tile.graphic, *memory_color.foreground(), *memory_color.background());
             }
         }
 
@@ -210,9 +208,7 @@ impl Map{
 
             if curr_light_level > 0f32{
                 let blended = cell.color.blend_light(&player.light, curr_light_level);
-                console.set_default_background(*blended.background());
-                console.set_default_foreground(*blended.foreground());
-                console.put_char(curr_x, curr_y, cell.graphic, BackgroundFlag::None);
+                console.put_char_ex(curr_x, curr_y, cell.graphic, *blended.foreground(), *blended.background());
             }
 
             curr_light_level -= cell.absorption;

@@ -35,9 +35,7 @@ impl Player{
 
 impl Object for Player{
     fn render(&self, console: &mut Console){
-        console.set_default_background(*self.color.background());
-        console.set_default_foreground(*self.color.foreground());
-        console.put_char(self.x, self.y, self.graphic, BackgroundFlag::None);
+        console.put_char_ex(self.x, self.y, self.graphic, *self.color.foreground(), *self.color.background());
     }
 }
 
@@ -110,19 +108,7 @@ impl Entity for Player{
 }
 
 impl StatDriven for Player{
-    fn set_hp(&mut self, hp: u64){
-        self.stats.curr_hp = hp;
-    }
-
-    fn set_max_hp(&mut self, max_hp: u64){
-        self.stats.max_hp = max_hp;
-    }
-
-    fn get_hp(&self) -> u64{
-        self.stats.curr_hp
-    }
-
-    fn get_max_hp(&self) -> u64{
-        self.stats.max_hp
+    fn get_stats(&self) -> &Stats{
+        &self.stats
     }
 }
