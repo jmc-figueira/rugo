@@ -53,8 +53,8 @@ fn main(){
 
     let mut quit = false;
 
-    let hud_shift = false;
-    let mesg_shift = false;
+    let mut hud_shift = false;
+    let mut mesg_shift = false;
 
     while !root.window_closed() && !quit{
         world_console.clear();
@@ -68,9 +68,9 @@ fn main(){
         map.render(&mut world_console, player_e);
         player_e.render(&mut world_console);
 
-        let hud_shift = if player_e.y > ((SCREEN_HEIGHT - 1) - (SCREEN_HEIGHT / 4)){ false } else if player_e.y <= (SCREEN_HEIGHT / 4){ true } else{ hud_shift };
+        hud_shift = if player_e.y > ((SCREEN_HEIGHT - 1) - (SCREEN_HEIGHT / 3)){ false } else if player_e.y <= (SCREEN_HEIGHT / 3){ true } else{ hud_shift };
 
-        let mesg_shift = if player_e.x > ((SCREEN_WIDTH - 1) - (SCREEN_WIDTH / 3)){ false } else if player_e.y <= (SCREEN_HEIGHT / 4){ true } else{ mesg_shift };
+        mesg_shift = if player_e.x > ((SCREEN_WIDTH - 1) - (SCREEN_WIDTH / 3)){ false } else if player_e.x <= (SCREEN_WIDTH / 3){ true } else{ mesg_shift };
 
         entities.register(player_e);
 
