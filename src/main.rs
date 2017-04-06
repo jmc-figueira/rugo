@@ -9,6 +9,8 @@ mod map;
 mod event;
 mod ui;
 mod stats;
+mod monster;
+mod dice;
 
 use colors::*;
 use tcod::console::*;
@@ -17,6 +19,7 @@ use object::*;
 use player::*;
 use map::*;
 use ui::*;
+use dice::*;
 use event::{Event, EventQueue, TurnBasedEventQueue};
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -30,7 +33,7 @@ fn main(){
 
     tcod::system::set_fps(FPS);
 
-    let mut ui = SciUI::new(SCREEN_WIDTH);
+    let mut ui = SciUI::new(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     let (map_builder, player_pos) = MapBuilder::new(SCREEN_WIDTH, SCREEN_HEIGHT).generate_cave();
 
@@ -50,6 +53,9 @@ fn main(){
 
     let mut quit = false;
 
+    let hud_shift = false;
+    let mesg_shift = false;
+
     while !root.window_closed() && !quit{
         world_console.clear();
 
@@ -62,14 +68,22 @@ fn main(){
         map.render(&mut world_console, player_e);
         player_e.render(&mut world_console);
 
-        let hud_y = if player_e.y > (SCREEN_HEIGHT / 2){ 0 } else{ SCREEN_HEIGHT };
+        let hud_shift = if player_e.y > ((SCREEN_HEIGHT - 1) - (SCREEN_HEIGHT / 4)){ false } else if player_e.y <= (SCREEN_HEIGHT / 4){ true } else{ hud_shift };
+
+        let mesg_shift = if player_e.x > ((SCREEN_WIDTH - 1) - (SCREEN_WIDTH / 3)){ false } else if player_e.y <= (SCREEN_HEIGHT / 4){ true } else{ mesg_shift };
 
         entities.register(player_e);
 
-        if hud_y > 0{
+        if hud_shift{
             blit(ui.show_hud(), (0, 0), (ui.hud_width, ui.hud_height), &mut world_console, (0, SCREEN_HEIGHT - ui.hud_height), 1.0, 1.0);
         } else{
             blit(ui.show_hud(), (0, 0), (ui.hud_width, ui.hud_height), &mut world_console, (0, 0), 1.0, 1.0);
+        }
+
+        if mesg_shift{
+            blit(ui.show_messages(), (0, 0), (ui.mesg_width, ui.mesg_height), &mut world_console, (SCREEN_WIDTH - ui.mesg_width, if hud_shift{ 0 } else{ ui.hud_height }), 1.0, 1.0);
+        } else{
+            blit(ui.show_messages(), (0, 0), (ui.mesg_width, ui.mesg_height), &mut world_console, (0, if hud_shift{ 0 } else{ ui.hud_height }), 1.0, 1.0);
         }
 
         blit(&mut world_console, (0, 0), (SCREEN_WIDTH, SCREEN_HEIGHT), &mut root, (0, 0), 1.0, 1.0);
