@@ -7,7 +7,7 @@ const DEFAULT_HUD_HEIGHT: i32 = 5;
 pub trait HUD{
     fn show_hud(&self) -> &Offscreen;
 
-    fn update_hud(&mut self, stats: Stats);
+    fn update_hud(&mut self, stats: Stats, time: u64);
 }
 
 pub trait SystemMessages{
@@ -32,7 +32,7 @@ impl HUD for SciUI{
         &self.hud
     }
 
-    fn update_hud(&mut self, stats: Stats){
+    fn update_hud(&mut self, stats: Stats, time: u64){
         let hp_bar_width = self.hud_width / 4;
 
         let initial_hp = "HP: [";
@@ -51,10 +51,21 @@ impl HUD for SciUI{
         self.hud.set_default_background(*self.ui_color.foreground());
         self.hud.rect(2 + initial_len, 2, curr_hp_width, 1, false, BackgroundFlag::Set);
 
-        self.hud.print_ex(2 + initial_len + hp_bar_width + hp_len + 3, 1, BackgroundFlag::None, TextAlignment::Left, "Str: ");
-        self.hud.print_ex(2 + initial_len + hp_bar_width + hp_len + 3, 3, BackgroundFlag::None, TextAlignment::Left, "Dex: ");
-        self.hud.print_ex(2 + initial_len + hp_bar_width + hp_len + 8, 1, BackgroundFlag::None, TextAlignment::Left, "Con: ");
-        self.hud.print_ex(2 + initial_len + hp_bar_width + hp_len + 8, 3, BackgroundFlag::None, TextAlignment::Left, "Int: ");
+        let str_text = "Str: ";
+        let str_len = str_text.len() as i32;
+        let dex_text = "Dex: ";
+        let dex_len = dex_text.len() as i32;
+        let con_text = "Con: ";
+        let con_len = con_text.len() as i32;
+        let int_text = "Int: ";
+        let int_len = int_text.len() as i32;
+
+        self.hud.print_ex(2 + initial_len + hp_bar_width + hp_len + 3, 1, BackgroundFlag::None, TextAlignment::Left, str_text);
+        self.hud.print_ex(2 + initial_len + hp_bar_width + hp_len + 3, 3, BackgroundFlag::None, TextAlignment::Left, dex_text);
+        self.hud.print_ex(2 + initial_len + hp_bar_width + hp_len + 3 + str_len, 1, BackgroundFlag::None, TextAlignment::Left, con_text);
+        self.hud.print_ex(2 + initial_len + hp_bar_width + hp_len + 3 + dex_len, 3, BackgroundFlag::None, TextAlignment::Left, int_text);
+
+        self.hud.print_ex(2 + initial_len + hp_bar_width + hp_len + 3 + str_len + con_len, 2, BackgroundFlag::None, TextAlignment::Left, format!("Turn: {}", time));
     }
 }
 

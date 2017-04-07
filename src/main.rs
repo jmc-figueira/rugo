@@ -14,7 +14,6 @@ mod dice;
 
 use colors::*;
 use tcod::console::*;
-use tcod::input::*;
 use object::*;
 use player::*;
 use map::*;
@@ -61,11 +60,9 @@ fn main(){
     while !root.window_closed() && !quit{
         world_console.clear();
 
-        event_queue.poll(&mut entities, &map);
-
         let player_e = entities.get_entity_by_id(player).unwrap().as_player().unwrap();
 
-        ui.update_hud(player_e.stats.clone());
+        ui.update_hud(player_e.stats.clone(), event_queue.current_turns());
 
         map.render(&mut world_console, player_e);
         player_e.render(&mut world_console);
@@ -91,6 +88,6 @@ fn main(){
         blit(&world_console, (0, 0), (SCREEN_WIDTH, SCREEN_HEIGHT), &mut root, (0, 0), 1.0, 1.0);
 
         root.flush();
-        quit = handle_input(&mut root, &mut ui, &mut event_queue, player);
+        quit = event_queue.poll(&mut root, &mut ui, &map, &mut entities, player);
     }
 }
