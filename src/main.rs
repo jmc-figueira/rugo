@@ -19,7 +19,7 @@ use player::*;
 use map::*;
 use ui::*;
 use dice::*;
-use event::{Event, EventQueue, TurnBasedEventQueue};
+use event::{EventQueue, TurnBasedEventQueue};
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
