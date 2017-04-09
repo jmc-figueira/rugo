@@ -123,15 +123,6 @@ $RECYCLE.BIN/
 
 pkg/
 bin/
-
-### Go template
-# Binaries for programs and plugins
-
-# Test binary, build with `go test -c`
-
-# Output of the go coverage tool, specifically when used with LiteIDE
-
-# Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 /src/server/src/google.golang.org/appengine/
 /src/server/src/golang.org/x/net/
 /src/server/src/github.com/
