@@ -10,6 +10,7 @@ pub const STAIRS: Rgb = (114, 123, 132);
 pub const MEMORY: Rgb = (64, 64, 64);
 pub const PLAYER: Rgb = (67, 179, 174);
 pub const HUD: Rgb = (96, 117, 98);
+pub const OLD_MESSAGES: Rgb = (63, 77, 64);
 
 pub struct ColorCell{
     background: Color,

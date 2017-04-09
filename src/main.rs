@@ -56,6 +56,7 @@ fn main(){
     let mut mesg_shift = false;
 
     ui.print("Welcome to The Arena...");
+    ui.print("Do you have what it takes to survive?");
 
     while !root.window_closed() && !quit{
         world_console.clear();

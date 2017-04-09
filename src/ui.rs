@@ -3,6 +3,7 @@ use stats::Stats;
 use colors::*;
 
 const DEFAULT_HUD_HEIGHT: i32 = 5;
+const MAX_MESSAGES: usize = 40;
 
 pub trait HUD{
     fn show_hud(&self) -> &Offscreen;
@@ -76,7 +77,10 @@ impl SystemMessages for SciUI{
 
     fn print(&mut self, message: &str) {
         self.messages.push(String::from(message));
-        self.sys_mesg.print_rect_ex(2, 2, self.mesg_width - 4, self.mesg_height - 4, BackgroundFlag::None, TextAlignment::Left, message);
+        if self.messages.len() > MAX_MESSAGES{
+            self.messages.remove(0);
+        }
+        self.print_mesg_list();
     }
 }
 
@@ -94,11 +98,14 @@ impl SciUI{
         }
     }
 
+    // Add hud repositioning code
+
     fn draw_box(width: i32, height: i32, title: Option<&str>) -> Offscreen{
         let mut ret_val = Offscreen::new(width + 1, height + 1);
 
         let ui_color = ColorCell::new(DARK, HUD);
 
+        ret_val.set_default_background(*ui_color.background());
         ret_val.set_default_foreground(*ui_color.foreground());
 
         ret_val.print_frame::<&str>(0, 0, width, height, false, BackgroundFlag::None, title);
@@ -114,5 +121,31 @@ impl SciUI{
         }
 
         ret_val
+    }
+
+    fn print_mesg_list(&mut self){
+        self.sys_mesg = SciUI::draw_box(self.mesg_width, self.mesg_height, Some("System Messages"));
+        let mut mesg_string = String::new();
+        let freeze_mesgs = self.messages.clone();
+
+        let first_mesg = freeze_mesgs.clone().pop();
+
+        match first_mesg{
+            Some(mesg) => {
+                for message in freeze_mesgs.into_iter().rev(){
+                    let nl_mesg = message + "\n";
+                    mesg_string += nl_mesg.as_str();
+                }
+
+                let old_color = ColorCell::new(DARK, OLD_MESSAGES);
+
+                self.sys_mesg.set_default_foreground(*old_color.foreground());
+                self.sys_mesg.print_rect_ex(2, 2, self.mesg_width - 4, self.mesg_height - 4, BackgroundFlag::None, TextAlignment::Left, mesg_string);
+
+                self.sys_mesg.set_default_foreground(*self.ui_color.foreground());
+                self.sys_mesg.print_rect_ex(2, 2, self.mesg_width - 4, self.mesg_height - 4, BackgroundFlag::None, TextAlignment::Left, mesg);
+            },
+            None => {}
+        }
     }
 }
