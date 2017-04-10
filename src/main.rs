@@ -11,12 +11,14 @@ mod ui;
 mod stats;
 mod monster;
 mod dice;
+mod item;
 
 use colors::*;
 use tcod::console::*;
 use object::*;
 use player::*;
 use map::*;
+use item::*;
 use ui::*;
 use dice::*;
 use event::{EventQueue, TurnBasedEventQueue};
@@ -38,13 +40,21 @@ fn main(){
 
     let mut map = map_builder.build();
 
-    let mut id_gen = IDManager::new();
+    let mut entity_gen = IDManager::new();
 
-    let mut pobj = Player::new(&mut id_gen, player_pos.0, player_pos.1, '@', DARK, PLAYER, 2f32);
+    let mut item_gen = IDManager::new();
+
+    let mut pobj = Player::new(&mut entity_gen, player_pos.0, player_pos.1, '@', DARK, PLAYER, 2f32);
+
+    let mut starting_wep = Item::new(&mut item_gen, "Rusty Sword", player_pos.0, player_pos.1, '/', DARK, (255, 255, 255));
 
     let mut entities = EntityManager::new();
 
+    let mut items = ItemManager::new();
+
     let player = entities.register(&mut pobj);
+
+    let weapon = items.add(starting_wep);
 
     let mut event_queue = TurnBasedEventQueue::new();
 
@@ -66,6 +76,7 @@ fn main(){
         ui.update_hud(player_e.stats.clone(), event_queue.current_turns());
 
         map.render(&mut world_console, player_e);
+        items.render(&mut world_console);
         player_e.render(&mut world_console);
 
         hud_shift = if player_e.y > ((SCREEN_HEIGHT - 1) - (SCREEN_HEIGHT / 3)){ false } else if player_e.y <= (SCREEN_HEIGHT / 3){ true } else{ hud_shift };

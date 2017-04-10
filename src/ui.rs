@@ -116,9 +116,15 @@ impl SciUI{
     pub fn show_all(&mut self, screen_width: i32, screen_height: i32) -> Offscreen{
         let mut ret_val = SciUI::draw_box(screen_width, screen_height, Some("System Messages"));
 
-        for message in self.messages.iter(){
-            ret_val.print_rect_ex(2, 2, screen_width - 4, screen_height - 4, BackgroundFlag::None, TextAlignment::Left, message);
+        let mut mesg_string = String::new();
+
+        let freeze_mesgs = self.messages.clone();
+
+        for message in freeze_mesgs.into_iter().rev(){
+            let nl_mesg = message + "\n";
+            mesg_string += nl_mesg.as_str();
         }
+        ret_val.print_rect_ex(2, 2, screen_width - 4, screen_height - 4, BackgroundFlag::None, TextAlignment::Left, mesg_string);
 
         ret_val
     }
