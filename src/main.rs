@@ -46,8 +46,6 @@ fn main(){
 
     let mut pobj = Player::new(&mut entity_gen, player_pos.0, player_pos.1, '@', DARK, PLAYER, 2f32);
 
-    let mut starting_wep = Weapon::new(&mut item_gen, "Rusty Sword", player_pos.0, player_pos.1, '/', DARK, (255, 255, 255));
-
     let mut entities = EntityManager::new();
 
     let mut items = ItemManager::new();
@@ -58,7 +56,7 @@ fn main(){
 
     let player = entities.register(&mut pobj);
 
-    let weapon = items.add(starting_wep);
+    let weapon = items.add(Weapon::new(&mut item_gen, "Rusty Sword", player_pos.0, player_pos.1, '/', DARK, (255, 255, 255)));
 
     let mut world_console = Offscreen::new(SCREEN_WIDTH, SCREEN_HEIGHT);
 
