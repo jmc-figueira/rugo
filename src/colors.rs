@@ -3,6 +3,27 @@ use tcod::colors::lerp;
 
 pub type Rgb = (u8, u8, u8);
 
+pub type Light = (Color, f32);
+pub type LightSource = (i32, i32, Light);
+
+pub trait LightingGroup{
+    fn find_by_coords(&self, x: i32, y: i32) -> Vec<LightSource>;
+}
+
+impl LightingGroup for Vec<LightSource>{
+    fn find_by_coords(&self, x: i32, y: i32) -> Vec<LightSource>{
+        let mut ret_val = Vec::new();
+
+        for source in self{
+            if source.0 == x && source.1 == y{
+                ret_val.push(source);
+            }
+        }
+
+        ret_val
+    }
+}
+
 pub const DARK: Rgb = (0, 0, 0);
 pub const CAVE_WALL: Rgb = (122, 82, 48);
 pub const CAVE_FLOOR: Rgb = (85, 57, 33);

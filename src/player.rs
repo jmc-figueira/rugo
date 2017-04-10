@@ -1,7 +1,6 @@
 use tcod::console::*;
 use tcod::colors::Color;
-use colors::Rgb;
-use colors::ColorCell;
+use colors::*;
 use object::*;
 use map::*;
 use stats::*;
@@ -12,8 +11,7 @@ pub struct Player{
     pub y: i32,
     graphic: char,
     color: ColorCell,
-    pub light: Color,
-    pub light_intensity: f32,
+    pub light: Light,
     pub stats: Stats,
 }
 
@@ -26,10 +24,13 @@ impl Player{
             y: y,
             graphic: graphic,
             color: ColorCell::new(bg, fg),
-            light: *color_cell.foreground(),
-            light_intensity: light_intensity,
+            light: (*color_cell.foreground(), light_intensity),
             stats: Stats::new()
         }
+    }
+
+    pub fn get_light_source(&self) -> LightSource{
+        (self.x, self.y, self.light)
     }
 }
 

@@ -178,7 +178,7 @@ impl Map{
         self.map[(y * self.width + x) as usize].toggle_explored();
     }
 
-    pub fn render(&mut self, console: &mut Console, player: &Player){
+    pub fn render(&mut self, console: &mut Console, player_light: LightSource, lights: Vec<LightSource>){
         let memory_color = ColorCell::new(DARK, MEMORY);
         for (i, tile) in self.map.iter().enumerate(){
             if tile.is_explored(){
@@ -188,15 +188,22 @@ impl Map{
 
         let mut iteration = 0;
         let mut angle = 0f64;
-        let mut curr_light_level = player.light_intensity;
+        let mut curr_light_level = (player_light.2).1;
+
+        for source in lights.find_by_coords(player_light.0, player_light.1){
+            curr_light_level += (source.2).1;
+        }
 
         while angle < 2f64 * f64::consts::PI{
-            let curr_x = player.x + ((iteration as f64) * angle.cos()).round() as i32;
-            let curr_y = player.y + ((iteration as f64) * angle.sin()).round() as i32;
+            let curr_x = player_light.0 + ((iteration as f64) * angle.cos()).round() as i32;
+            let curr_y = player_light.1 + ((iteration as f64) * angle.sin()).round() as i32;
             if curr_x < 0 || curr_x >= self.width || curr_y < 0 || curr_y >= self.height{
                 angle += f64::consts::PI / 1000f64;
                 iteration = 0;
-                curr_light_level = player.light_intensity;
+                curr_light_level = player_light.light_intensity;
+                for source in lights.find_by_coords(curr_x, curr_y){
+                    curr_light_level += (source.2).1;
+                }
                 continue;
             }
 
@@ -207,7 +214,10 @@ impl Map{
             let cell = self.get_tile(curr_x, curr_y);
 
             if curr_light_level > 0f32{
-                let blended = cell.color.blend_light(&player.light, curr_light_level);
+                let mut blended = cell.color.blend_light(&player.light, curr_light_level);
+                for source in lights.find_by_coords(curr_x, curr_y){
+                    blended = blended.blend_light((source.2).0, curr_light_level);
+                }
                 console.put_char_ex(curr_x, curr_y, cell.graphic, *blended.foreground(), *blended.background());
             }
 
