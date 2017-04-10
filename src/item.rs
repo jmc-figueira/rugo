@@ -33,10 +33,24 @@ impl Object for Item{
     fn render(&self, console: &mut Console){
         console.put_char_ex(self.x, self.y, self.graphic, *self.color.foreground(), *self.color.background());
     }
+
+    fn get_graphic(&self) -> char{
+        self.graphic
+    }
+
+    fn get_coords(&self) -> (i32, i32){
+        (self.x, self.y)
+    }
+
+    fn get_color(&self) -> ColorCell{
+        self.color.clone()
+    }
 }
 
 pub trait ItemList{
     fn add(&mut self, item: Item) -> u64;
+
+    fn items_at(&self, x: i32, y: i32) -> Vec<&Item>;
 
     fn remove(&mut self, id: u64) -> Option<Item>;
 }
@@ -63,6 +77,17 @@ impl ItemList for ItemManager{
     fn add(&mut self, item: Item) -> u64{
         let ret_val = item.get_id();
         self.list.insert(item.get_id(), item);
+        ret_val
+    }
+
+    fn items_at(&self, x: i32, y: i32) -> Vec<&Item>{
+        let mut ret_val = Vec::new();
+
+        for item in self.list.values(){
+            if item.get_coords().0 == x && item.get_coords().1 == y{
+                ret_val.push(item);
+            }
+        }
         ret_val
     }
 

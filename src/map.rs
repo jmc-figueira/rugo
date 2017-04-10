@@ -2,6 +2,8 @@ use tcod::console::*;
 use colors::*;
 use player::*;
 use tile::*;
+use object::*;
+use item::*;
 use rand;
 use rand::Rng;
 use std::f64;
@@ -178,7 +180,7 @@ impl Map{
         self.map[(y * self.width + x) as usize].toggle_explored();
     }
 
-    pub fn render(&mut self, console: &mut Console, player_light: LightSource, lights: Vec<LightSource>){
+    pub fn render(&mut self, console: &mut Console, player_light: LightSource, lights: Vec<LightSource>, items: &ItemList, entities: &EntityManager){
         let memory_color = ColorCell::new(DARK, MEMORY);
         for (i, tile) in self.map.iter().enumerate(){
             if tile.is_explored(){
@@ -214,11 +216,23 @@ impl Map{
             let cell = self.get_tile(curr_x, curr_y);
 
             if curr_light_level > 0f32{
-                let mut blended = cell.color.blend_light(&(player_light.2).0, curr_light_level);
+                let mut curr_light = ColorCell::new(DARK, ((player_light.2).0.r, (player_light.2).0.g, (player_light.2).0.b));
                 for source in lights.find_by_coords(curr_x, curr_y){
-                    blended = blended.blend_light(&(source.2).0, curr_light_level);
+                    curr_light = curr_light.blend_light(&(source.2).0, curr_light_level);
                 }
+                let mut blended = cell.color.blend_light(&curr_light.foreground(), curr_light_level);
+
                 console.put_char_ex(curr_x, curr_y, cell.graphic, *blended.foreground(), *blended.background());
+
+                for item in items.items_at(curr_x, curr_y){
+                    let mut item_blended = item.get_color().blend_light(&curr_light.foreground(), curr_light_level);
+                    console.put_char_ex(curr_x, curr_y, item.get_graphic(), *item_blended.foreground(), *item_blended.background());
+                }
+
+                for (entity_graphic, entity_color) in entities.get_graphic_for_entity_at(curr_x, curr_y){
+                    let mut entity_blended = entity_color.blend_light(&curr_light.foreground(), curr_light_level);
+                    console.put_char_ex(curr_x, curr_y, entity_graphic, *entity_blended.foreground(), *entity_blended.background());
+                }
             }
 
             curr_light_level -= cell.absorption;

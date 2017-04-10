@@ -75,15 +75,19 @@ fn main(){
 
         ui.update_hud(player_e.stats.clone(), event_queue.current_turns());
 
-        map.render(&mut world_console, player_e.get_light_source(), Vec::new());
-        items.render(&mut world_console);
-        player_e.render(&mut world_console);
+        let player_coords = player_e.get_coords();
 
-        hud_shift = if player_e.y > ((SCREEN_HEIGHT - 1) - (SCREEN_HEIGHT / 3)){ false } else if player_e.y <= (SCREEN_HEIGHT / 3){ true } else{ hud_shift };
-
-        mesg_shift = if player_e.x > ((SCREEN_WIDTH - 1) - (SCREEN_WIDTH / 3)){ false } else if player_e.x <= (SCREEN_WIDTH / 3){ true } else{ mesg_shift };
+        let player_ls = player_e.get_light_source();
 
         entities.register(player_e);
+
+        map.render(&mut world_console, player_ls, Vec::new(), &items, &entities);
+
+        hud_shift = if player_coords.1 > ((SCREEN_HEIGHT - 1) - (SCREEN_HEIGHT / 3)){ false } else if player_coords.1 <= (SCREEN_HEIGHT / 3){ true } else{ hud_shift };
+
+        mesg_shift = if player_coords.0 > ((SCREEN_WIDTH - 1) - (SCREEN_WIDTH / 3)){ false } else if player_coords.0 <= (SCREEN_WIDTH / 3){ true } else{ mesg_shift };
+
+
 
         if hud_shift{
             blit(ui.show_hud(), (0, 0), (ui.hud_width, ui.hud_height), &mut world_console, (0, SCREEN_HEIGHT - ui.hud_height), 1.0, 1.0);

@@ -38,6 +38,18 @@ impl Object for Player{
     fn render(&self, console: &mut Console){
         console.put_char_ex(self.x, self.y, self.graphic, *self.color.foreground(), *self.color.background());
     }
+
+    fn get_graphic(&self) -> char{
+        self.graphic
+    }
+
+    fn get_coords(&self) -> (i32, i32){
+        (self.x, self.y)
+    }
+
+    fn get_color(&self) -> ColorCell{
+        self.color.clone()
+    }
 }
 
 impl Entity for Player{
