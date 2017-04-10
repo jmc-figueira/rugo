@@ -21,7 +21,7 @@ use map::*;
 use item::*;
 use ui::*;
 use dice::*;
-use event::{EventQueue, TurnBasedEventQueue};
+use event::{EventQueue, TurnBasedEventQueue, Event};
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
@@ -46,17 +46,19 @@ fn main(){
 
     let mut pobj = Player::new(&mut entity_gen, player_pos.0, player_pos.1, '@', DARK, PLAYER, 2f32);
 
-    let mut starting_wep = Item::new(&mut item_gen, "Rusty Sword", player_pos.0, player_pos.1, '/', DARK, (255, 255, 255));
+    let mut starting_wep = Weapon::new(&mut item_gen, "Rusty Sword", player_pos.0, player_pos.1, '/', DARK, (255, 255, 255));
 
     let mut entities = EntityManager::new();
 
     let mut items = ItemManager::new();
 
+    let mut event_queue = TurnBasedEventQueue::new();
+
+    event_queue.push(Event::Look(pobj.get_coords().0, pobj.get_coords().1));
+
     let player = entities.register(&mut pobj);
 
     let weapon = items.add(starting_wep);
-
-    let mut event_queue = TurnBasedEventQueue::new();
 
     let mut world_console = Offscreen::new(SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -104,6 +106,6 @@ fn main(){
         blit(&world_console, (0, 0), (SCREEN_WIDTH, SCREEN_HEIGHT), &mut root, (0, 0), 1.0, 1.0);
 
         root.flush();
-        quit = event_queue.poll(&mut root, &mut ui, &map, &mut entities, player);
+        quit = event_queue.poll(&mut root, &mut ui, &map, &mut entities, player, &mut items);
     }
 }

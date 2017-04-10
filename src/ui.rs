@@ -52,21 +52,15 @@ impl HUD for SciUI{
         self.hud.set_default_background(*self.ui_color.foreground());
         self.hud.rect(2 + initial_len, 2, curr_hp_width, 1, false, BackgroundFlag::Set);
 
-        let str_text = "Str: ";
-        let str_len = str_text.len() as i32;
-        let dex_text = "Dex: ";
-        let dex_len = dex_text.len() as i32;
-        let con_text = "Con: ";
-        let con_len = con_text.len() as i32;
-        let int_text = "Int: ";
-        let int_len = int_text.len() as i32;
+        let stats_first = format!("Str: {} Dex: {}", stats.strength, stats.dexterity);
+        let stats_first_len = stats_first.len() as i32;
+        let stats_second = format!("Con: {} Int: {}", stats.constitution, stats.intelligence);
+        let stats_second_len = stats_second.len() as i32;
 
-        self.hud.print_ex(2 + initial_len + hp_bar_width + hp_len + 3, 1, BackgroundFlag::None, TextAlignment::Left, str_text);
-        self.hud.print_ex(2 + initial_len + hp_bar_width + hp_len + 3, 3, BackgroundFlag::None, TextAlignment::Left, dex_text);
-        self.hud.print_ex(2 + initial_len + hp_bar_width + hp_len + 3 + str_len, 1, BackgroundFlag::None, TextAlignment::Left, con_text);
-        self.hud.print_ex(2 + initial_len + hp_bar_width + hp_len + 3 + dex_len, 3, BackgroundFlag::None, TextAlignment::Left, int_text);
+        self.hud.print_ex(2 + initial_len + hp_bar_width + hp_len + 3, 1, BackgroundFlag::None, TextAlignment::Left, stats_first);
+        self.hud.print_ex(2 + initial_len + hp_bar_width + hp_len + 3, 3, BackgroundFlag::None, TextAlignment::Left, stats_second);
 
-        self.hud.print_ex(2 + initial_len + hp_bar_width + hp_len + 3 + str_len + con_len, 2, BackgroundFlag::None, TextAlignment::Left, format!("Turn: {}", time));
+        self.hud.print_ex(2 + initial_len + hp_bar_width + hp_len + 3 + ((stats_first_len as f64).max(stats_second_len as f64)) as i32 + 3, 2, BackgroundFlag::None, TextAlignment::Left, format!("Turn: {}", time));
     }
 }
 

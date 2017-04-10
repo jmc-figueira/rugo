@@ -1,25 +1,45 @@
 use tcod::input::*;
 use tcod::console::*;
 use object::{Direction, EntityManager};
-use ui::SciUI;
+use item::*;
+use ui::{SciUI, SystemMessages};
 use map::Map;
 
 const MOVE_COST: u64 = 1;
 
 pub enum Event{
+    Look(i32, i32),
+    PickUp(i32, i32),
     Move(u64, Direction, u64),
     Walk(u64, Direction, u64),
 }
 
 impl Event{
-    pub fn execute(&self, event_queue: &mut EventQueue, entity_list: &mut EntityManager, map: &Map) -> u64{
+    pub fn execute(&self, event_queue: &mut EventQueue, entity_list: &mut EntityManager, items: &mut ItemList, map: &Map, ui: &mut SystemMessages) -> u64{
         match *self{
+            Event::Look(x, y) =>{
+                let items_at = items.items_at(x, y);
+                match items_at.len(){
+                    0 => {},
+                    1 => ui.print(format!("There is a {} here.", items_at[0].get_name()).as_str()),
+                    2 => ui.print(format!("There is a {} and a {} here.", items_at[0].get_name(), items_at[1].get_name()).as_str()),
+                    _ => ui.print("There are several items here."),
+                }
+                0
+            },
+            Event::PickUp(x, y) =>{
+                1
+            },
             Event::Move(id, dir, cost) => {
                 match entity_list.get_entity_by_id(id){
                     Some(entity) => {
-                        entity.move_cell(dir, map);
+                        if entity.move_cell(dir, map){
+                            event_queue.push(Event::Look(entity.get_coords().0, entity.get_coords().1));
+                            entity_list.register(entity);
+                            return cost;
+                        }
                         entity_list.register(entity);
-                        cost
+                        0
                     },
                     None => 0
                 }
@@ -46,7 +66,7 @@ impl Event{
 pub trait EventQueue{
     fn push(&mut self, event: Event);
 
-    fn poll(&mut self, root: &mut Root, ui: &mut SciUI, map: &Map, entity_list: &mut EntityManager, player_id: u64) -> bool;
+    fn poll(&mut self, root: &mut Root, ui: &mut SciUI, map: &Map, entity_list: &mut EntityManager, player_id: u64, items: &mut ItemList) -> bool;
 }
 
 pub struct TurnBasedEventQueue{
@@ -149,12 +169,12 @@ impl EventQueue for TurnBasedEventQueue{
         self.queue.push(event);
     }
 
-    fn poll(&mut self, root: &mut Root, ui: &mut SciUI, map: &Map, entity_list: &mut EntityManager, player_id: u64) -> bool{
+    fn poll(&mut self, root: &mut Root, ui: &mut SciUI, map: &Map, entity_list: &mut EntityManager, player_id: u64, items: &mut ItemList) -> bool{
         let next_event = self.queue.pop();
 
         match next_event{
             Some(event) => {
-                self.turns += event.execute(self, entity_list, map);
+                self.turns += event.execute(self, entity_list, items, map, ui);
                 false
             },
             None => {
