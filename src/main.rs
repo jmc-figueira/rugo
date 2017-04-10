@@ -75,7 +75,7 @@ fn main(){
 
         ui.update_hud(player_e.stats.clone(), event_queue.current_turns());
 
-        map.render(&mut world_console, player_e);
+        map.render(&mut world_console, player_e.get_light_source(), Vec::new());
         items.render(&mut world_console);
         player_e.render(&mut world_console);
 

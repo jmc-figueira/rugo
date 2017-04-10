@@ -200,7 +200,7 @@ impl Map{
             if curr_x < 0 || curr_x >= self.width || curr_y < 0 || curr_y >= self.height{
                 angle += f64::consts::PI / 1000f64;
                 iteration = 0;
-                curr_light_level = player_light.light_intensity;
+                curr_light_level = (player_light.2).1;
                 for source in lights.find_by_coords(curr_x, curr_y){
                     curr_light_level += (source.2).1;
                 }
@@ -214,9 +214,9 @@ impl Map{
             let cell = self.get_tile(curr_x, curr_y);
 
             if curr_light_level > 0f32{
-                let mut blended = cell.color.blend_light(&player.light, curr_light_level);
+                let mut blended = cell.color.blend_light(&(player_light.2).0, curr_light_level);
                 for source in lights.find_by_coords(curr_x, curr_y){
-                    blended = blended.blend_light((source.2).0, curr_light_level);
+                    blended = blended.blend_light(&(source.2).0, curr_light_level);
                 }
                 console.put_char_ex(curr_x, curr_y, cell.graphic, *blended.foreground(), *blended.background());
             }

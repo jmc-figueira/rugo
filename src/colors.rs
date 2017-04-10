@@ -16,7 +16,7 @@ impl LightingGroup for Vec<LightSource>{
 
         for source in self{
             if source.0 == x && source.1 == y{
-                ret_val.push(source);
+                ret_val.push(*source);
             }
         }
 
