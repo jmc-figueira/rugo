@@ -229,9 +229,9 @@ impl Map{
                     console.put_char_ex(curr_x, curr_y, item.get_graphic(), *item_blended.foreground(), *item_blended.background());
                 }
 
-                for (entity_graphic, entity_color) in entities.get_graphic_for_entity_at(curr_x, curr_y){
-                    let mut entity_blended = entity_color.blend_light(&curr_light.foreground(), curr_light_level);
-                    console.put_char_ex(curr_x, curr_y, entity_graphic, *entity_blended.foreground(), *entity_blended.background());
+                if let Some(entity) = entities.get_entity_at(curr_x, curr_y){
+                    let mut entity_blended = entity.get_color().blend_light(&curr_light.foreground(), curr_light_level);
+                    console.put_char_ex(curr_x, curr_y, entity.get_graphic(), *entity_blended.foreground(), *entity_blended.background());
                 }
             }
 

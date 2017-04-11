@@ -54,31 +54,31 @@ pub trait Entity : Object{
     fn check_mobility(&self, direction: Direction, map: &Map) -> bool;
 }
 
-pub struct EntityManager<'root>{
-    entities: HashMap<u64, &'root mut Entity>,
+pub struct EntityManager{
+    entities: HashMap<u64, Box<Entity>>,
 }
 
-impl<'root> EntityManager<'root>{
-    pub fn new() -> EntityManager<'root>{
+impl EntityManager{
+    pub fn new() -> EntityManager{
         EntityManager{
             entities: HashMap::new()
         }
     }
 
-    pub fn register(&mut self, entity: &'root mut Entity) -> u64{
+    pub fn register(&mut self, entity: Box<Entity>) -> u64{
         let ret_val = entity.get_id();
         self.entities.insert(entity.get_id(), entity);
         ret_val
     }
 
-    pub fn get_entity_by_id(&mut self, id: u64) -> Option<&'root mut Entity>{
-        self.entities.remove(&id)
+    pub fn get_entity_by_id(&mut self, id: u64) -> Option<&mut Box<Entity>>{
+        self.entities.get_mut(&id)
     }
 
-    pub fn get_graphic_for_entity_at(&self, x: i32, y: i32) -> Option<(char, ColorCell)>{
+    pub fn get_entity_at(&self, x: i32, y: i32) -> Option<&Box<Entity>>{
         for entity in self.entities.values(){
             if entity.get_coords().0 == x && entity.get_coords().1 == y{
-                return Some((entity.get_graphic(), entity.get_color()));
+                return Some(entity);
             }
         }
         None

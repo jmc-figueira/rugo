@@ -21,6 +21,7 @@ use map::*;
 use item::*;
 use ui::*;
 use dice::*;
+use stats::*;
 use event::{EventQueue, TurnBasedEventQueue, Event};
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -44,19 +45,17 @@ fn main(){
 
     let mut item_gen = IDManager::new();
 
-    let mut pobj = Player::new(&mut entity_gen, player_pos.0, player_pos.1, '@', DARK, PLAYER, 2f32);
-
     let mut entities = EntityManager::new();
+
+    let player = entities.register(Box::new(Player::new(&mut entity_gen, player_pos.0, player_pos.1, '@', DARK, PLAYER, 2f32)));
 
     let mut items = ItemManager::new();
 
     let mut event_queue = TurnBasedEventQueue::new();
 
-    event_queue.push(Event::Look(pobj.get_coords().0, pobj.get_coords().1));
+    event_queue.push(Event::Look(entities.get_entity_by_id(player).unwrap().get_coords().0, entities.get_entity_by_id(player).unwrap().get_coords().1));
 
-    let player = entities.register(&mut pobj);
-
-    let weapon = items.add(Weapon::new(&mut item_gen, "Rusty Sword", player_pos.0, player_pos.1, '/', DARK, (255, 255, 255)));
+    let weapon = items.add(Box::new(Weapon::new(&mut item_gen, "Rusty Sword", "An old sword left to rust in the dungeon for a very long time.", player_pos.0, player_pos.1, '/', DARK, (255, 255, 255), Box::new(SimpleDice::new(1, 4)), Box::new(SimpleDice::new(1, 4)), 10)));
 
     let mut world_console = Offscreen::new(SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -71,23 +70,17 @@ fn main(){
     while !root.window_closed() && !quit{
         world_console.clear();
 
-        let player_e = entities.get_entity_by_id(player).unwrap().as_player().unwrap();
+        ui.update_hud(entities.get_entity_by_id(player).unwrap().as_player().unwrap().get_stats().clone(), event_queue.current_turns());
 
-        ui.update_hud(player_e.stats.clone(), event_queue.current_turns());
+        let player_coords = entities.get_entity_by_id(player).unwrap().get_coords();
 
-        let player_coords = player_e.get_coords();
-
-        let player_ls = player_e.get_light_source();
-
-        entities.register(player_e);
+        let player_ls = entities.get_entity_by_id(player).unwrap().as_player().unwrap().get_light_source();
 
         map.render(&mut world_console, player_ls, Vec::new(), &items, &entities);
 
         hud_shift = if player_coords.1 > ((SCREEN_HEIGHT - 1) - (SCREEN_HEIGHT / 3)){ false } else if player_coords.1 <= (SCREEN_HEIGHT / 3){ true } else{ hud_shift };
 
         mesg_shift = if player_coords.0 > ((SCREEN_WIDTH - 1) - (SCREEN_WIDTH / 3)){ false } else if player_coords.0 <= (SCREEN_WIDTH / 3){ true } else{ mesg_shift };
-
-
 
         if hud_shift{
             blit(ui.show_hud(), (0, 0), (ui.hud_width, ui.hud_height), &mut world_console, (0, SCREEN_HEIGHT - ui.hud_height), 1.0, 1.0);

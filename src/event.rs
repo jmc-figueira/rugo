@@ -35,10 +35,8 @@ impl Event{
                     Some(entity) => {
                         if entity.move_cell(dir, map){
                             event_queue.push(Event::Look(entity.get_coords().0, entity.get_coords().1));
-                            entity_list.register(entity);
                             return cost;
                         }
-                        entity_list.register(entity);
                         0
                     },
                     None => 0
@@ -49,11 +47,9 @@ impl Event{
                     Some(entity) => {
                         if entity.check_mobility(dir, map){
                             entity.move_cell(dir, map);
-                            entity_list.register(entity);
                             event_queue.push(Event::Walk(id, dir, cost));
                             return cost;
                         }
-                        entity_list.register(entity);
                         0
                     },
                     None => 0
