@@ -116,3 +116,21 @@ impl ItemList for ItemManager{
         self.list.remove(&id)
     }
 }
+
+pub struct Inventory{
+    weapons: Vec<Weapon>,
+}
+
+impl ItemList for Inventory{
+    fn add(&mut self, item: Box<Item>) -> u64 {
+        unimplemented!()
+    }
+
+    fn items_at(&self, x: i32, y: i32) -> Vec<&Box<Item>> {
+        unimplemented!()
+    }
+
+    fn remove(&mut self, id: u64) -> Option<Box<Item>> {
+        unimplemented!()
+    }
+}
