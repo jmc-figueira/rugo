@@ -8,8 +8,8 @@ use map::Map;
 const MOVE_COST: u64 = 1;
 
 pub enum Event{
-    Look(i32, i32),
-    PickUp(i32, i32),
+    Look(u64),
+    PickUp(u64),
     Move(u64, Direction, u64),
     Walk(u64, Direction, u64),
 }
@@ -17,24 +17,47 @@ pub enum Event{
 impl Event{
     pub fn execute(&self, event_queue: &mut EventQueue, entity_list: &mut EntityManager, items: &mut ItemList, map: &Map, ui: &mut SystemMessages) -> u64{
         match *self{
-            Event::Look(x, y) =>{
-                let items_at = items.items_at(x, y);
-                match items_at.len(){
-                    0 => {},
-                    1 => ui.print(format!("There is a {} here.", items_at[0].get_name()).as_str()),
-                    2 => ui.print(format!("There is a {} and a {} here.", items_at[0].get_name(), items_at[1].get_name()).as_str()),
-                    _ => ui.print("There are several items here."),
+            Event::Look(player_id) =>{
+                match entity_list.get_entity_by_id(player_id){
+                    Some(entity) => {
+                        let items_at = items.items_at(entity.get_coords().0, entity.get_coords().1);
+                        match items_at.len(){
+                            0 => {},
+                            1 => ui.print(format!("There is a {} here.", items_at[0].get_name()).as_str()),
+                            2 => ui.print(format!("There is a {} and a {} here.", items_at[0].get_name(), items_at[1].get_name()).as_str()),
+                            _ => ui.print("There are several items here."),
+                        }
+                        0
+                    },
+                    None => 0
                 }
-                0
             },
-            Event::PickUp(x, y) =>{
-                1
+            Event::PickUp(player_id) =>{
+                match entity_list.get_entity_by_id(player_id){
+                    Some(entity) => {
+                        let items_at = items.items_at(entity.get_coords().0, entity.get_coords().1);
+                        match items_at.len(){
+                            0 => {
+                                ui.print("There is nothing to pick up here.");
+                                return 0;
+                            },
+                            1 => {
+                                return 1;
+                            },
+                            _ => {
+                                return 1;
+                            }
+                        }
+                        0
+                    },
+                    None => 0
+                }
             },
             Event::Move(id, dir, cost) => {
                 match entity_list.get_entity_by_id(id){
                     Some(entity) => {
                         if entity.move_cell(dir, map){
-                            event_queue.push(Event::Look(entity.get_coords().0, entity.get_coords().1));
+                            event_queue.push(Event::Look(entity.get_id()));
                             return cost;
                         }
                         0
@@ -124,6 +147,10 @@ impl TurnBasedEventQueue{
                 },
                 Key{code: KeyCode::NumPad1, ..} | Key{printable: 'z', ..} => {
                     self.push(Event::Move(player_id, Direction::SW, MOVE_COST));
+                    false
+                },
+                Key{printable: ',', ..} => {
+                    self.push(Event::PickUp(player_id));
                     false
                 },
                 _ => {
