@@ -130,22 +130,19 @@ impl SciUI{
 
         let first_mesg = freeze_mesgs.clone().pop();
 
-        match first_mesg{
-            Some(mesg) => {
-                for message in freeze_mesgs.into_iter().rev(){
-                    let nl_mesg = message + "\n";
-                    mesg_string += nl_mesg.as_str();
-                }
+        if let Some(mesg) = first_mesg{
+            for message in freeze_mesgs.into_iter().rev(){
+                let nl_mesg = message + "\n";
+                mesg_string += nl_mesg.as_str();
+            }
 
-                let old_color = ColorCell::new(DARK, OLD_MESSAGES);
+            let old_color = ColorCell::new(DARK, OLD_MESSAGES);
 
-                self.sys_mesg.set_default_foreground(*old_color.foreground());
-                self.sys_mesg.print_rect_ex(2, 2, self.mesg_width - 4, self.mesg_height - 4, BackgroundFlag::None, TextAlignment::Left, mesg_string);
+            self.sys_mesg.set_default_foreground(*old_color.foreground());
+            self.sys_mesg.print_rect_ex(2, 2, self.mesg_width - 4, self.mesg_height - 4, BackgroundFlag::None, TextAlignment::Left, mesg_string);
 
-                self.sys_mesg.set_default_foreground(*self.ui_color.foreground());
-                self.sys_mesg.print_rect_ex(2, 2, self.mesg_width - 4, self.mesg_height - 4, BackgroundFlag::None, TextAlignment::Left, mesg);
-            },
-            None => {}
+            self.sys_mesg.set_default_foreground(*self.ui_color.foreground());
+            self.sys_mesg.print_rect_ex(2, 2, self.mesg_width - 4, self.mesg_height - 4, BackgroundFlag::None, TextAlignment::Left, mesg);
         }
     }
 }

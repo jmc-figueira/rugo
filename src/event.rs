@@ -18,65 +18,53 @@ impl Event{
     pub fn execute(&self, event_queue: &mut EventQueue, entity_list: &mut EntityManager, items: &mut ItemList, map: &Map, ui: &mut SystemMessages) -> u64{
         match *self{
             Event::Look(player_id) =>{
-                match entity_list.get_entity_by_id(player_id){
-                    Some(entity) => {
-                        let items_at = items.items_at(entity.get_coords().0, entity.get_coords().1);
-                        match items_at.len(){
-                            0 => {},
-                            1 => ui.print(format!("There is a {} here.", items_at[0].get_name()).as_str()),
-                            2 => ui.print(format!("There is a {} and a {} here.", items_at[0].get_name(), items_at[1].get_name()).as_str()),
-                            _ => ui.print("There are several items here."),
-                        }
-                        0
-                    },
-                    None => 0
+                if let Some(entity) = entity_list.get_entity_by_id(player_id){
+                    let items_at = items.items_at(entity.get_coords().0, entity.get_coords().1);
+                    match items_at.len(){
+                        0 => {},
+                        1 => ui.print(format!("There is a {} here.", items_at[0].get_name()).as_str()),
+                        2 => ui.print(format!("There is a {} and a {} here.", items_at[0].get_name(), items_at[1].get_name()).as_str()),
+                        _ => ui.print("There are several items here."),
+                    }
                 }
+                0
             },
             Event::PickUp(player_id) =>{
-                match entity_list.get_entity_by_id(player_id){
-                    Some(entity) => {
-                        let items_at = items.items_at(entity.get_coords().0, entity.get_coords().1);
-                        match items_at.len(){
-                            0 => {
-                                ui.print("There is nothing to pick up here.");
-                                return 0;
-                            },
-                            1 => {
-                                return 1;
-                            },
-                            _ => {
-                                return 1;
-                            }
+                if let Some(entity) = entity_list.get_entity_by_id(player_id){
+                    let items_at = items.items_at(entity.get_coords().0, entity.get_coords().1);
+                    match items_at.len(){
+                        0 => {
+                            ui.print("There is nothing to pick up here.");
+                            return 0;
+                        },
+                        1 => {
+                            return 1;
+                        },
+                        _ => {
+                            return 1;
                         }
-                        0
-                    },
-                    None => 0
+                    }
                 }
+                0
             },
             Event::Move(id, dir, cost) => {
-                match entity_list.get_entity_by_id(id){
-                    Some(entity) => {
-                        if entity.move_cell(dir, map){
-                            event_queue.push(Event::Look(entity.get_id()));
-                            return cost;
-                        }
-                        0
-                    },
-                    None => 0
+                if let Some(entity) = entity_list.get_entity_by_id(id){
+                    if entity.move_cell(dir, map){
+                        event_queue.push(Event::Look(entity.get_id()));
+                        return cost;
+                    }
                 }
+                0
             },
             Event::Walk(id, dir, cost) => {
-                match entity_list.get_entity_by_id(id){
-                    Some(entity) => {
-                        if entity.check_mobility(dir, map){
-                            entity.move_cell(dir, map);
-                            event_queue.push(Event::Walk(id, dir, cost));
-                            return cost;
-                        }
-                        0
-                    },
-                    None => 0
+                if let Some(entity) = entity_list.get_entity_by_id(id){
+                    if entity.check_mobility(dir, map){
+                        entity.move_cell(dir, map);
+                        event_queue.push(Event::Walk(id, dir, cost));
+                        return cost;
+                    }
                 }
+                0
             }
         }
     }

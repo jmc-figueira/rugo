@@ -55,7 +55,7 @@ fn main(){
 
     event_queue.push(Event::Look(player));
 
-    let weapon = items.add(Box::new(Weapon::new(&mut item_gen, "Rusty Sword", "An old sword left to rust in the dungeon for a very long time.", player_pos.0, player_pos.1, '/', DARK, (255, 255, 255), Box::new(SimpleDice::new(1, 4)), Box::new(SimpleDice::new(1, 4)), 10)));
+    items.add(Box::new(Weapon::new(&mut item_gen, "Rusty Sword", "An old sword left to rust in the dungeon for a very long time.", player_pos.0, player_pos.1, '/', DARK, (255, 255, 255), Box::new(SimpleDice::new(1, 4)), Box::new(SimpleDice::new(1, 4)), 10)));
 
     let mut world_console = Offscreen::new(SCREEN_WIDTH, SCREEN_HEIGHT);
 
