@@ -97,7 +97,7 @@ impl ItemManager{
 impl ItemList for ItemManager{
     fn add(&mut self, item: Box<Item>) -> u64{
         let ret_val = item.get_id();
-        self.list.insert(item.get_id(), item);
+        self.list.insert(ret_val, item);
         ret_val
     }
 
