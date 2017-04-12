@@ -71,66 +71,84 @@ impl Item for Weapon{
 pub trait ItemList{
     fn add(&mut self, item: Box<Item>) -> u64;
 
-    fn items_at(&self, x: i32, y: i32) -> Vec<&Box<Item>>;
-
     fn remove(&mut self, id: u64) -> Option<Box<Item>>;
+
+    fn get_item_by_id(&self, id: u64) -> Option<&Box<Item>>;
+
+    fn transfer(&mut self, id: u64, destination: &mut ItemList){
+        destination.add(self.remove(id).unwrap());
+    }
 }
 
 pub struct ItemManager{
-    list: HashMap<u64, Box<Item>>,
+    items: HashMap<u64, Box<Item>>,
 }
 
 impl ItemManager{
     pub fn new() -> ItemManager{
         ItemManager{
-            list: HashMap::new()
+            items: HashMap::new()
         }
     }
 
     pub fn render(&self, console: &mut Console){
-        for item in self.list.values(){
+        for item in self.items.values(){
             console.put_char_ex(item.get_coords().0, item.get_coords().1, item.get_graphic(), *item.get_color().foreground(), *item.get_color().background());
         }
+    }
+
+    pub fn items_at(&self, x: i32, y: i32) -> Vec<u64>{
+        let mut ret_val = Vec::new();
+
+        for (id, item) in self.items.iter(){
+            if item.get_coords().0 == x && item.get_coords().1 == y{
+                ret_val.push(*id);
+            }
+        }
+        ret_val
     }
 }
 
 impl ItemList for ItemManager{
     fn add(&mut self, item: Box<Item>) -> u64{
         let ret_val = item.get_id();
-        self.list.insert(ret_val, item);
-        ret_val
-    }
-
-    fn items_at(&self, x: i32, y: i32) -> Vec<&Box<Item>>{
-        let mut ret_val = Vec::new();
-
-        for item in self.list.values(){
-            if item.get_coords().0 == x && item.get_coords().1 == y{
-                ret_val.push(item);
-            }
-        }
+        self.items.insert(ret_val, item);
         ret_val
     }
 
     fn remove(&mut self, id: u64) -> Option<Box<Item>>{
-        self.list.remove(&id)
+        self.items.remove(&id)
+    }
+
+    fn get_item_by_id(&self, id: u64) -> Option<&Box<Item>> {
+        self.items.get(&id)
     }
 }
 
 pub struct Inventory{
-    weapons: Vec<Weapon>,
+    items: HashMap<u64, Box<Item>>,
+}
+
+impl Inventory{
+    pub fn new() -> Inventory{
+        Inventory{
+            items: HashMap::new()
+        }
+    }
 }
 
 impl ItemList for Inventory{
     fn add(&mut self, item: Box<Item>) -> u64 {
-        unimplemented!()
-    }
-
-    fn items_at(&self, x: i32, y: i32) -> Vec<&Box<Item>> {
-        unimplemented!()
+        let ret_val = item.get_id();
+        self.items.insert(ret_val, item);
+        ret_val
     }
 
     fn remove(&mut self, id: u64) -> Option<Box<Item>> {
-        unimplemented!()
+        self.items.remove(&id)
+    }
+
+    fn get_item_by_id(&self, id: u64) -> Option<&Box<Item>>{
+        self.items.get(&id)
     }
 }

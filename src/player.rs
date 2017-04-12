@@ -4,6 +4,7 @@ use colors::*;
 use object::*;
 use map::*;
 use stats::*;
+use item::Inventory;
 
 pub struct Player{
     id: u64,
@@ -12,7 +13,8 @@ pub struct Player{
     graphic: char,
     color: ColorCell,
     pub light: Light,
-    pub stats: Stats,
+    stats: Stats,
+    pub inventory: Inventory,
 }
 
 impl Player{
@@ -25,7 +27,8 @@ impl Player{
             graphic: graphic,
             color: ColorCell::new(bg, fg),
             light: (*color_cell.foreground(), light_intensity),
-            stats: Stats::new()
+            stats: Stats::new(),
+            inventory: Inventory::new()
         }
     }
 

@@ -180,7 +180,7 @@ impl Map{
         self.map[(y * self.width + x) as usize].toggle_explored();
     }
 
-    pub fn render(&mut self, console: &mut Console, player_light: LightSource, lights: Vec<LightSource>, items: &ItemList, entities: &EntityManager){
+    pub fn render(&mut self, console: &mut Console, player_light: LightSource, lights: Vec<LightSource>, items: &mut ItemManager, entities: &EntityManager){
         let memory_color = ColorCell::new(DARK, MEMORY);
         for (i, tile) in self.map.iter().enumerate(){
             if tile.is_explored(){
@@ -224,7 +224,8 @@ impl Map{
 
                 console.put_char_ex(curr_x, curr_y, cell.graphic, *blended.foreground(), *blended.background());
 
-                for item in items.items_at(curr_x, curr_y){
+                for item_id in items.items_at(curr_x, curr_y){
+                    let item = items.get_item_by_id(item_id).unwrap();
                     let mut item_blended = item.get_color().blend_light(&curr_light.foreground(), curr_light_level);
                     console.put_char_ex(curr_x, curr_y, item.get_graphic(), *item_blended.foreground(), *item_blended.background());
                 }

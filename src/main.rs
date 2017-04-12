@@ -76,7 +76,7 @@ fn main(){
 
         let player_ls = entities.get_entity_by_id(player).unwrap().as_player().unwrap().get_light_source();
 
-        map.render(&mut world_console, player_ls, Vec::new(), &items, &entities);
+        map.render(&mut world_console, player_ls, Vec::new(), &mut items, &entities);
 
         hud_shift = if player_coords.1 > ((SCREEN_HEIGHT - 1) - (SCREEN_HEIGHT / 3)){ false } else if player_coords.1 <= (SCREEN_HEIGHT / 3){ true } else{ hud_shift };
 

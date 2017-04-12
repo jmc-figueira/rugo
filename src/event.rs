@@ -15,29 +15,31 @@ pub enum Event{
 }
 
 impl Event{
-    pub fn execute(&self, event_queue: &mut EventQueue, entity_list: &mut EntityManager, items: &mut ItemList, map: &Map, ui: &mut SystemMessages) -> u64{
+    pub fn execute(&self, event_queue: &mut EventQueue, entity_list: &mut EntityManager, items: &mut ItemManager, map: &Map, ui: &mut SystemMessages) -> u64{
         match *self{
             Event::Look(player_id) =>{
                 if let Some(entity) = entity_list.get_entity_by_id(player_id){
                     let items_at = items.items_at(entity.get_coords().0, entity.get_coords().1);
                     match items_at.len(){
                         0 => {},
-                        1 => ui.print(format!("There is a {} here.", items_at[0].get_name()).as_str()),
-                        2 => ui.print(format!("There is a {} and a {} here.", items_at[0].get_name(), items_at[1].get_name()).as_str()),
+                        1 => ui.print(format!("There is a {} here.", items.get_item_by_id(items_at[0]).unwrap().get_name()).as_str()),
+                        2 => ui.print(format!("There is a {} and a {} here.", items.get_item_by_id(items_at[0]).unwrap().get_name(), items.get_item_by_id(items_at[1]).unwrap().get_name()).as_str()),
                         _ => ui.print("There are several items here."),
                     }
                 }
                 0
             },
             Event::PickUp(player_id) =>{
-                if let Some(entity) = entity_list.get_entity_by_id(player_id){
-                    let items_at = items.items_at(entity.get_coords().0, entity.get_coords().1);
+                if let Some(player) = entity_list.get_entity_by_id(player_id){
+                    let items_at = items.items_at(player.get_coords().0, player.get_coords().1);
                     match items_at.len(){
                         0 => {
                             ui.print("There is nothing to pick up here.");
                             return 0;
                         },
                         1 => {
+                            ui.print(format!("You picked up the {}.", items.get_item_by_id(items_at[0]).unwrap().get_name()).as_str());
+                            items.transfer(items_at[0], &mut player.as_player().unwrap().inventory);
                             return 1;
                         },
                         _ => {
@@ -73,7 +75,7 @@ impl Event{
 pub trait EventQueue{
     fn push(&mut self, event: Event);
 
-    fn poll(&mut self, root: &mut Root, ui: &mut SciUI, map: &Map, entity_list: &mut EntityManager, player_id: u64, items: &mut ItemList) -> bool;
+    fn poll(&mut self, root: &mut Root, ui: &mut SciUI, map: &Map, entity_list: &mut EntityManager, player_id: u64, items: &mut ItemManager) -> bool;
 }
 
 pub struct TurnBasedEventQueue{
@@ -180,7 +182,7 @@ impl EventQueue for TurnBasedEventQueue{
         self.queue.push(event);
     }
 
-    fn poll(&mut self, root: &mut Root, ui: &mut SciUI, map: &Map, entity_list: &mut EntityManager, player_id: u64, items: &mut ItemList) -> bool{
+    fn poll(&mut self, root: &mut Root, ui: &mut SciUI, map: &Map, entity_list: &mut EntityManager, player_id: u64, items: &mut ItemManager) -> bool{
         let next_event = self.queue.pop();
 
         match next_event{
