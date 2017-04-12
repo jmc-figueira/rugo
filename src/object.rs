@@ -67,7 +67,7 @@ impl EntityManager{
 
     pub fn register(&mut self, entity: Box<Entity>) -> u64{
         let ret_val = entity.get_id();
-        self.entities.insert(entity.get_id(), entity);
+        self.entities.insert(ret_val, entity);
         ret_val
     }
 
