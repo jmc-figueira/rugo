@@ -94,6 +94,11 @@ fn main(){
             blit(ui.show_messages(), (0, 0), (ui.mesg_width, ui.mesg_height), &mut world_console, (0, if hud_shift{ 0 } else{ ui.hud_height }), 1.0, 1.0);
         }
 
+        if ui.inv_visible{
+            ui.update_inventory(&entities.get_entity_by_id(player).unwrap().as_player().unwrap().inventory);
+            blit(ui.show_inventory(), (0, 0), (ui.inv_width, ui.inv_height), &mut world_console, (if mesg_shift { 0 } else { SCREEN_WIDTH - ui.inv_width }, if hud_shift { SCREEN_HEIGHT - ui.hud_height - ui.inv_height } else { ui.hud_height }), 1.0, 1.0);
+        }
+
         blit(&world_console, (0, 0), (SCREEN_WIDTH, SCREEN_HEIGHT), &mut root, (0, 0), 1.0, 1.0);
 
         root.flush();

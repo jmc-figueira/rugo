@@ -1,6 +1,7 @@
 use tcod::console::*;
 use stats::Stats;
 use colors::*;
+use item::Inventory;
 
 const DEFAULT_HUD_HEIGHT: i32 = 5;
 const MAX_MESSAGES: usize = 40;
@@ -17,14 +18,24 @@ pub trait SystemMessages{
     fn print(&mut self, message: &str);
 }
 
+pub trait InventoryUI{
+    fn show_inventory(&self) -> &Offscreen;
+
+    fn update_inventory(&mut self, inventory: &Inventory);
+}
+
 pub struct SciUI{
     hud: Offscreen,
     ui_color: ColorCell,
     sys_mesg: Offscreen,
+    inventory: Offscreen,
+    pub inv_visible: bool,
     pub hud_width: i32,
     pub hud_height: i32,
     pub mesg_width: i32,
     pub mesg_height: i32,
+    pub inv_width: i32,
+    pub inv_height: i32,
     messages: Vec<String>,
 }
 
@@ -78,16 +89,38 @@ impl SystemMessages for SciUI{
     }
 }
 
+impl InventoryUI for SciUI{
+    fn show_inventory(&self) -> &Offscreen{
+        &self.inventory
+    }
+
+    fn update_inventory(&mut self, inventory: &Inventory){
+        let mut name_string = String::new();
+
+        for item in inventory.items_iter(){
+            let nl_name = item.get_name().to_owned() + "\n";
+            name_string += nl_name.as_str();
+        }
+
+        self.inventory.set_default_foreground(*self.ui_color.foreground());
+        self.inventory.print_rect_ex(2, 2, self.inv_width - 4, self.inv_height - 4, BackgroundFlag::None, TextAlignment::Left, name_string);
+    }
+}
+
 impl SciUI{
     pub fn new(max_width: i32, max_height: i32) -> SciUI{
         SciUI{
             hud: SciUI::draw_box(max_width, DEFAULT_HUD_HEIGHT, None),
             ui_color: ColorCell::new(DARK, HUD),
             sys_mesg: SciUI::draw_box(max_width / 3, max_height / 2, Some("System Messages")),
+            inventory: SciUI::draw_box(max_width / 3, max_height / 2, Some("Inventory")),
+            inv_visible: false,
             hud_width: max_width,
             hud_height: DEFAULT_HUD_HEIGHT,
             mesg_width: max_width / 3,
             mesg_height: max_height / 2,
+            inv_width: max_width / 3,
+            inv_height: max_height / 2,
             messages: Vec::new()
         }
     }

@@ -10,6 +10,7 @@ const MOVE_COST: u64 = 1;
 pub enum Event{
     Look(u64),
     PickUp(u64),
+    Drop(u64, u64),
     Move(u64, Direction, u64),
     Walk(u64, Direction, u64),
 }
@@ -47,6 +48,9 @@ impl Event{
                         }
                     }
                 }
+                0
+            },
+            Event::Drop(player_id, item_id) => {
                 0
             },
             Event::Move(id, dir, cost) => {
@@ -94,7 +98,13 @@ impl TurnBasedEventQueue{
     pub fn handle_input(&mut self, root: &mut Root, ui: &mut SciUI, player_id: u64) -> bool{
         if let Some(key) = root.check_for_keypress(KEY_PRESSED){
             match key{
-                Key{code: KeyCode::Escape, ..} => true,
+                Key{code: KeyCode::Escape, ..} => {
+                    if ui.inv_visible{
+                        ui.inv_visible = false;
+                        return false;
+                    }
+                    true
+                },
                 Key{printable: 'p', ctrl: true, shift: true, ..} => {
                     let full_mesg_box = ui.show_all(root.width(), root.height());
                     blit(&full_mesg_box, (0, 0), (root.width(), root.height()), root, (0, 0), 1.0, 1.0);
@@ -103,6 +113,10 @@ impl TurnBasedEventQueue{
                     root.clear();
                     false
                 },
+                Key{printable: 'i', ..} => {
+                    ui.inv_visible = true;
+                    false
+                }
                 Key{code, printable, shift: true, ..} => {
                     self.shift_commands(code, printable, player_id);
                     false

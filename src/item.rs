@@ -3,6 +3,7 @@ use colors::*;
 use dice::*;
 use tcod::console::*;
 use std::collections::HashMap;
+use std::collections::hash_map::Values;
 
 pub trait Item : Object{
     fn get_name(&self) -> &str;
@@ -134,6 +135,14 @@ impl Inventory{
         Inventory{
             items: HashMap::new()
         }
+    }
+
+    pub fn num_of_items(&self) -> usize{
+        self.items.len()
+    }
+
+    pub fn items_iter(&self) -> Values<u64, Box<Item>>{
+        self.items.values()
     }
 }
 
