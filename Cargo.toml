@@ -1,8 +1,8 @@
 [package]
 name = "rugo"
-version = "0.0.1-201704121704"
+version = "0.0.1-201704190105"
 authors = ["João Figueira <joao.tburn@gmail.com>"]
 
 [dependencies]
-tcod = "*"
+tcod = { git = "https://github.com/tomassedovic/tcod-rs" }
 rand = "*"
