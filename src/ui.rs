@@ -135,7 +135,7 @@ impl SciUI{
         ret_val.set_default_background(*ui_color.background());
         ret_val.set_default_foreground(*ui_color.foreground());
 
-        ret_val.print_frame::<&str>(0, 0, width, height, false, BackgroundFlag::None, title);
+        ret_val.print_frame(0, 0, width, height, true, BackgroundFlag::None, title);
 
         ret_val
     }
