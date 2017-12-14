@@ -31,7 +31,7 @@ const SCREEN_HEIGHT: i32 = 50;
 const FPS: i32 = 60;
 
 fn main(){
-    let mut root = Root::initializer().renderer(Renderer::GLSL).font("ascii8x14_aa_ro.png", FontLayout::AsciiInRow).font_type(FontType::Greyscale).font_dimensions(32, 8).size(SCREEN_WIDTH, SCREEN_HEIGHT).title(format!("Rugo {}", VERSION)).init();
+    let mut root = Root::initializer().renderer(Renderer::GLSL).font("ascii8x14_aa_ro.png", FontLayout::AsciiInRow).font_type(FontType::Default).font_dimensions(32, 8).size(SCREEN_WIDTH, SCREEN_HEIGHT).title(format!("Rugo {}", VERSION)).init();
 
     tcod::system::set_fps(FPS);
 
