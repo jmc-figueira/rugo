@@ -26,8 +26,8 @@ use event::{EventQueue, TurnBasedEventQueue, Event};
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
-const SCREEN_WIDTH: i32 = 80;
-const SCREEN_HEIGHT: i32 = 50;
+const SCREEN_WIDTH: i32 = 100;
+const SCREEN_HEIGHT: i32 = 40;
 const FPS: i32 = 60;
 
 fn main(){
